@@ -1,0 +1,745 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lesson 1 - Server Log Monitor</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            background-color: #0d1117;
+            color: #c9d1d9;
+            font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
+            font-size: 13px;
+            margin: 0;
+            padding: 20px;
+            line-height: 1.5;
+        }
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #0d1117; }
+        ::-webkit-scrollbar-thumb { background: #30363d; border-radius: 4px; }
+        #header {
+            border-bottom: 1px solid #30363d;
+            padding-bottom: 12px;
+            margin-bottom: 16px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            background: #0d1117;
+            z-index: 100;
+        }
+        .header-left { display: flex; align-items: center; gap: 16px; }
+        .server-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 4px 10px;
+            background: #21262d;
+            border: 1px solid #30363d;
+            border-radius: 6px;
+            font-size: 12px;
+        }
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            background: #3fb950;
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+        }
+        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
+        select {
+            background-color: #21262d;
+            color: #c9d1d9;
+            border: 1px solid #30363d;
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-family: inherit;
+            font-size: 12px;
+            outline: none;
+            cursor: pointer;
+        }
+        #controls-hint {
+            color: #8b949e;
+            font-size: 11px;
+            display: flex;
+            gap: 16px;
+        }
+        .hint-key {
+            background: #21262d;
+            padding: 2px 6px;
+            border-radius: 4px;
+            border: 1px solid #30363d;
+            font-size: 10px;
+        }
+        #log-container {
+            max-height: calc(100vh - 180px);
+            overflow-y: auto;
+            padding-right: 8px;
+        }
+        .log-line {
+            display: grid;
+            grid-template-columns: 180px 80px 1fr;
+            gap: 12px;
+            padding: 3px 8px;
+            cursor: pointer;
+            transition: background-color 0.15s;
+            border-radius: 4px;
+            margin-bottom: 2px;
+        }
+        .log-line:hover { background-color: #1f2428; }
+        .log-line.active {
+            background-color: #2b313c;
+            border-left: 3px solid #58a6ff;
+            padding-left: 5px;
+        }
+        .timestamp { color: #8b949e; font-size: 12px; white-space: nowrap; }
+        .speaker-badge {
+            display: inline-block;
+            padding: 1px 8px;
+            border-radius: 4px;
+            font-size: 11px;
+            font-weight: 600;
+            text-align: center;
+            background: rgba(88, 166, 255, 0.15);
+            color: #58a6ff;
+        }
+        .log-content { color: #c9d1d9; word-break: break-word; line-height: 1.6; }
+        .log-content-cn {
+            color: #484f58;
+            font-size: 12px;
+            margin-top: 3px;
+            display: none;
+        }
+        .log-line.show-cn .log-content-cn { display: block; }
+        #player-bar {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: #161b22;
+            border-top: 1px solid #30363d;
+            padding: 12px 20px;
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+        .player-controls { display: flex; align-items: center; gap: 8px; }
+        .player-btn {
+            background: #21262d;
+            border: 1px solid #30363d;
+            color: #c9d1d9;
+            width: 32px;
+            height: 32px;
+            border-radius: 6px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            transition: all 0.2s;
+        }
+        .player-btn:hover { background: #30363d; border-color: #8b949e; }
+        .play-btn {
+            width: 36px;
+            height: 36px;
+            background: #1f6feb;
+            border-color: #1f6feb;
+            color: #fff;
+        }
+        .play-btn:hover { background: #388bfd; }
+        .progress-container {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .time-display {
+            color: #8b949e;
+            font-size: 11px;
+            font-family: inherit;
+            min-width: 40px;
+        }
+        .progress-bar {
+            flex: 1;
+            height: 4px;
+            background: #30363d;
+            border-radius: 2px;
+            cursor: pointer;
+            position: relative;
+        }
+        .progress-bar:hover { height: 6px; }
+        .progress-fill {
+            height: 100%;
+            background: #1f6feb;
+            border-radius: 2px;
+            width: 0%;
+            transition: width 0.1s linear;
+        }
+        .volume-control { display: flex; align-items: center; gap: 6px; }
+        .volume-slider {
+            width: 80px;
+            height: 4px;
+            background: #30363d;
+            border-radius: 2px;
+            cursor: pointer;
+            -webkit-appearance: none;
+        }
+        .volume-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 12px;
+            height: 12px;
+            background: #8b949e;
+            border-radius: 50%;
+            cursor: pointer;
+        }
+        .toggle-cn {
+            background: none;
+            border: 1px solid #30363d;
+            color: #8b949e;
+            padding: 4px 10px;
+            border-radius: 6px;
+            font-size: 11px;
+            cursor: pointer;
+            margin-left: 8px;
+        }
+        .toggle-cn:hover { border-color: #8b949e; color: #c9d1d9; }
+        .toggle-cn.active { background: #1f6feb; border-color: #1f6feb; color: #fff; }
+        #audio-element { display: none; }
+        .nav-links { display: flex; gap: 8px; margin-left: 16px; }
+        .nav-btn {
+            background: #21262d;
+            border: 1px solid #30363d;
+            color: #c9d1d9;
+            padding: 4px 10px;
+            border-radius: 6px;
+            text-decoration: none;
+            font-size: 11px;
+        }
+        .nav-btn:hover { border-color: #8b949e; }
+    </style>
+</head>
+<body>
+
+<div id="header">
+    <div class="header-left">
+        <div class="server-badge">
+            <div class="status-dot"></div>
+            <strong>prod-cluster-us-east-1</strong>
+        </div>
+        <span style="color: #8b949e;">session logs:</span>
+        <select id="lesson-select" onchange="location.href=this.value">
+            <option value="lesson-283/" selected>Session-283 (Lesson 1)</option>
+            <option value="lesson-284/" >Session-284 (Lesson 2)</option>
+            <option value="lesson-285/" >Session-285 (Lesson 3)</option>
+            <option value="lesson-286/" >Session-286 (Lesson 4)</option>
+            <option value="lesson-287/" >Session-287 (Lesson 5)</option>
+        </select>
+        <div class="nav-links">
+            <a href="../" class="nav-btn">← Index</a>
+            <a href="../english-audio/" class="nav-btn">Dashboard</a>
+        </div>
+    </div>
+    <div id="controls-hint">
+        <span><span class="hint-key">Space</span> Play/Pause</span>
+        <span><span class="hint-key">←</span><span class="hint-key">→</span> Skip 5s</span>
+        <span><span class="hint-key">↑</span><span class="hint-key">↓</span> Navigate</span>
+        <button class="toggle-cn" id="toggleCn" onclick="toggleChinese()">Show Translation</button>
+    </div>
+</div>
+
+<div id="log-container">
+    <div class="log-line" id="log-0" onclick="seekTo(0)">
+        <span class="timestamp">2026-03-11T08:00:00Z</span>
+        <span class="speaker-badge">Richard:</span>
+        <div class="log-content">
+            <div>Excuse me. My name is Richard Stewart. I&#x27;m a photographer. May I take a picture of you and your little boy?</div>
+            <div class="log-content-cn">对不起。我叫理查德 • 斯图尔特。我是一位摄影师。我可以给你和你的小男孩儿拍一张照片吗？</div>
+        </div>
+    </div>
+    <div class="log-line" id="log-1" onclick="seekTo(3)">
+        <span class="timestamp">2026-03-11T08:03:00Z</span>
+        <span class="speaker-badge">Mrs.Vann:</span>
+        <div class="log-content">
+            <div>What&#x27;s it for?</div>
+            <div class="log-content-cn">做什么用呢？</div>
+        </div>
+    </div>
+    <div class="log-line" id="log-2" onclick="seekTo(6)">
+        <span class="timestamp">2026-03-11T08:06:00Z</span>
+        <span class="speaker-badge">Richard:</span>
+        <div class="log-content">
+            <div>It&#x27;s for a book.</div>
+            <div class="log-content-cn">用在一本书里。</div>
+        </div>
+    </div>
+    <div class="log-line" id="log-3" onclick="seekTo(9)">
+        <span class="timestamp">2026-03-11T08:09:00Z</span>
+        <span class="speaker-badge">Mrs.Vann:</span>
+        <div class="log-content">
+            <div>You&#x27;re writing a book?</div>
+            <div class="log-content-cn">你在写一本书吗?</div>
+        </div>
+    </div>
+    <div class="log-line" id="log-4" onclick="seekTo(12)">
+        <span class="timestamp">2026-03-11T08:12:00Z</span>
+        <span class="speaker-badge">Richard:</span>
+        <div class="log-content">
+            <div>It&#x27;s a book of pictures. I call it Family Album, U.S.A.</div>
+            <div class="log-content-cn">是一本摄影集。我把它叫作《走遍美国》。</div>
+        </div>
+    </div>
+    <div class="log-line" id="log-5" onclick="seekTo(15)">
+        <span class="timestamp">2026-03-11T08:15:00Z</span>
+        <span class="speaker-badge">Mrs.Vann:</span>
+        <div class="log-content">
+            <div>Oh, that&#x27;s a nice idea. Well, it&#x27;s fine if you take our picture. I&#x27;m Martha Vann.</div>
+            <div class="log-content-cn">噢，这想法不错。好吧，你要给我们照相，那很好。我叫Martha Vann。</div>
+        </div>
+    </div>
+    <div class="log-line" id="log-6" onclick="seekTo(18)">
+        <span class="timestamp">2026-03-11T08:18:00Z</span>
+        <span class="speaker-badge">Richard:</span>
+        <div class="log-content">
+            <div>Thank you. I appreciate your help. I&#x27;m Richard. What&#x27;s your name?</div>
+            <div class="log-content-cn">谢谢。很感谢你的帮助。我是Richard，你叫什么？</div>
+        </div>
+    </div>
+    <div class="log-line" id="log-7" onclick="seekTo(21)">
+        <span class="timestamp">2026-03-11T08:21:00Z</span>
+        <span class="speaker-badge">Gerald:</span>
+        <div class="log-content">
+            <div>Gerald.</div>
+            <div class="log-content-cn">Gerald。</div>
+        </div>
+    </div>
+    <div class="log-line" id="log-8" onclick="seekTo(24)">
+        <span class="timestamp">2026-03-11T08:24:00Z</span>
+        <span class="speaker-badge">Richard:</span>
+        <div class="log-content">
+            <div>How old are you, Gerald?</div>
+            <div class="log-content-cn">你今年多大？</div>
+        </div>
+    </div>
+    <div class="log-line" id="log-9" onclick="seekTo(27)">
+        <span class="timestamp">2026-03-11T08:27:00Z</span>
+        <span class="speaker-badge">Gerald:</span>
+        <div class="log-content">
+            <div>Five.</div>
+            <div class="log-content-cn">五岁。</div>
+        </div>
+    </div>
+    <div class="log-line" id="log-10" onclick="seekTo(30)">
+        <span class="timestamp">2026-03-11T08:30:00Z</span>
+        <span class="speaker-badge">Richard:</span>
+        <div class="log-content">
+            <div>And where do you live?</div>
+            <div class="log-content-cn">你们住哪？</div>
+        </div>
+    </div>
+    <div class="log-line" id="log-11" onclick="seekTo(33)">
+        <span class="timestamp">2026-03-11T08:33:00Z</span>
+        <span class="speaker-badge">Mrs.Vann:</span>
+        <div class="log-content">
+            <div>We live in California.</div>
+            <div class="log-content-cn">我们住在加利福尼亚州 。</div>
+        </div>
+    </div>
+    <div class="log-line" id="log-12" onclick="seekTo(36)">
+        <span class="timestamp">2026-03-11T08:36:00Z</span>
+        <span class="speaker-badge">Richard:</span>
+        <div class="log-content">
+            <div>Well, welcome to New York. OK, just a second. I&#x27;m almost ready here.</div>
+            <div class="log-content-cn">噢，欢迎你们到纽约来。好了，请稍等一下。我快要准备好了。</div>
+        </div>
+    </div>
+    <div class="log-line" id="log-13" onclick="seekTo(39)">
+        <span class="timestamp">2026-03-11T08:39:00Z</span>
+        <span class="speaker-badge">Alexadra:</span>
+        <div class="log-content">
+            <div>Can I help you?</div>
+            <div class="log-content-cn">我能帮你忙吗？</div>
+        </div>
+    </div>
+    <div class="log-line" id="log-14" onclick="seekTo(42)">
+        <span class="timestamp">2026-03-11T08:42:00Z</span>
+        <span class="speaker-badge">Richard:</span>
+        <div class="log-content">
+            <div>Oh, please. Hold Gerald&#x27;s hand, please. Great! Now point to the buildings. Terrific! Give Mommy a kiss, Gerald. Nice! Thank you, Gerald. And thank you, Mrs Vann.</div>
+            <div class="log-content-cn">噢，太好了，请握住Gerald的手。很好！现在请指着那些建筑物。好极了！亲一亲妈咪，很棒！谢谢你， Gerald。谢谢，Vann太太。</div>
+        </div>
+    </div>
+    <div class="log-line" id="log-15" onclick="seekTo(45)">
+        <span class="timestamp">2026-03-11T08:45:00Z</span>
+        <span class="speaker-badge">Mrs.Vann:</span>
+        <div class="log-content">
+            <div>Oh, my pleasure. We&#x27;ll be looking for your book.</div>
+            <div class="log-content-cn">噢，不客气。我们一定去买你的书。</div>
+        </div>
+    </div>
+    <div class="log-line" id="log-16" onclick="seekTo(48)">
+        <span class="timestamp">2026-03-11T08:48:00Z</span>
+        <span class="speaker-badge">Richard:</span>
+        <div class="log-content">
+            <div>Thank you. Good-bye. Bye, Gerald. Thanks again.</div>
+            <div class="log-content-cn">谢谢。再见。Gerald，再见。再次感谢 。</div>
+        </div>
+    </div>
+    <div class="log-line" id="log-17" onclick="seekTo(51)">
+        <span class="timestamp">2026-03-11T08:51:00Z</span>
+        <span class="speaker-badge">Alexandra:</span>
+        <div class="log-content">
+            <div>Oh, you&#x27;re welcome.</div>
+            <div class="log-content-cn">噢 ，请别客气。</div>
+        </div>
+    </div>
+    <div class="log-line" id="log-18" onclick="seekTo(54)">
+        <span class="timestamp">2026-03-11T08:54:00Z</span>
+        <span class="speaker-badge">Richard:</span>
+        <div class="log-content">
+            <div>Hey, let me take your picture!</div>
+            <div class="log-content-cn">嘿 ，让我给你拍一张照片。</div>
+        </div>
+    </div>
+    <div class="log-line" id="log-19" onclick="seekTo(57)">
+        <span class="timestamp">2026-03-11T08:57:00Z</span>
+        <span class="speaker-badge">Alexandra:</span>
+        <div class="log-content">
+            <div>Wonderful. Please.</div>
+            <div class="log-content-cn">好啊，请。</div>
+        </div>
+    </div>
+    <div class="log-line" id="log-20" onclick="seekTo(60)">
+        <span class="timestamp">2026-03-11T09:00:00Z</span>
+        <span class="speaker-badge">Richard:</span>
+        <div class="log-content">
+            <div>Are you from New York?</div>
+            <div class="log-content-cn">是从纽约来的吗？</div>
+        </div>
+    </div>
+    <div class="log-line" id="log-21" onclick="seekTo(63)">
+        <span class="timestamp">2026-03-11T09:03:00Z</span>
+        <span class="speaker-badge">Alexandra:</span>
+        <div class="log-content">
+            <div>No, I&#x27;m from Greece. I&#x27;m an exchange student.</div>
+            <div class="log-content-cn">不是，我是从希腊来的。我是一名交换学生。</div>
+        </div>
+    </div>
+    <div class="log-line" id="log-22" onclick="seekTo(66)">
+        <span class="timestamp">2026-03-11T09:06:00Z</span>
+        <span class="speaker-badge">Richard:</span>
+        <div class="log-content">
+            <div>When did you come here?</div>
+            <div class="log-content-cn">是什么时候来这儿的？</div>
+        </div>
+    </div>
+    <div class="log-line" id="log-23" onclick="seekTo(69)">
+        <span class="timestamp">2026-03-11T09:09:00Z</span>
+        <span class="speaker-badge">Alexandra:</span>
+        <div class="log-content">
+            <div>Three months ago.</div>
+            <div class="log-content-cn">三个月之前。</div>
+        </div>
+    </div>
+    <div class="log-line" id="log-24" onclick="seekTo(72)">
+        <span class="timestamp">2026-03-11T09:12:00Z</span>
+        <span class="speaker-badge">Richard:</span>
+        <div class="log-content">
+            <div>Your English is very good.</div>
+            <div class="log-content-cn">你的英语说得很好。</div>
+        </div>
+    </div>
+    <div class="log-line" id="log-25" onclick="seekTo(75)">
+        <span class="timestamp">2026-03-11T09:15:00Z</span>
+        <span class="speaker-badge">Alexandra:</span>
+        <div class="log-content">
+            <div>Thanks. I studied English in school.</div>
+            <div class="log-content-cn">谢谢夸奖。我是在学校里学的英语。</div>
+        </div>
+    </div>
+    <div class="log-line" id="log-26" onclick="seekTo(78)">
+        <span class="timestamp">2026-03-11T09:18:00Z</span>
+        <span class="speaker-badge">Richard:</span>
+        <div class="log-content">
+            <div>Would you like some coffee?</div>
+            <div class="log-content-cn">要不要来点咖啡？</div>
+        </div>
+    </div>
+    <div class="log-line" id="log-27" onclick="seekTo(81)">
+        <span class="timestamp">2026-03-11T09:21:00Z</span>
+        <span class="speaker-badge">Alexandra:</span>
+        <div class="log-content">
+            <div>No, thank you. Tell me about your book.</div>
+            <div class="log-content-cn">不用了，谢谢。谈谈你的书吧。</div>
+        </div>
+    </div>
+    <div class="log-line" id="log-28" onclick="seekTo(84)">
+        <span class="timestamp">2026-03-11T09:24:00Z</span>
+        <span class="speaker-badge">Richard:</span>
+        <div class="log-content">
+            <div>Oh, it&#x27;s not finished yet, but I have some of the pictures. Would you like to see them?</div>
+            <div class="log-content-cn">噢，它尚未完成。但我手头有一些照片。要不要看一看？</div>
+        </div>
+    </div>
+    <div class="log-line" id="log-29" onclick="seekTo(87)">
+        <span class="timestamp">2026-03-11T09:27:00Z</span>
+        <span class="speaker-badge">Alexandra:</span>
+        <div class="log-content">
+            <div>Yes, I&#x27;d like that.</div>
+            <div class="log-content-cn">要啊，我想看一看。</div>
+        </div>
+    </div>
+    <div class="log-line" id="log-30" onclick="seekTo(90)">
+        <span class="timestamp">2026-03-11T09:30:00Z</span>
+        <span class="speaker-badge">Richard:</span>
+        <div class="log-content">
+            <div>Here they are. Family Album, U.S.A.. It&#x27;s an album of pictures of the United States: the cities, the special places, and the people. And these are pictures of people working: steel workers, bankers, police, street vendors, ambulance drivers, doctors...Oh, this is my father. He&#x27;s a doctor. This is my mother.</div>
+            <div class="log-content-cn">就在这。走遍美国是关于美国的一些城市、一些特别的地方以及人们的摄影选辑。这是人们工作中的照片：钢架工人、银行职员、警察、街头小贩、救护车驾驶员、医生等等……噢，这是我父亲。他是一名医生。这是我母亲。</div>
+        </div>
+    </div>
+    <div class="log-line" id="log-31" onclick="seekTo(93)">
+        <span class="timestamp">2026-03-11T09:33:00Z</span>
+        <span class="speaker-badge">Alexandra:</span>
+        <div class="log-content">
+            <div>What&#x27;s her name?</div>
+            <div class="log-content-cn">她叫什么名字？</div>
+        </div>
+    </div>
+    <div class="log-line" id="log-32" onclick="seekTo(96)">
+        <span class="timestamp">2026-03-11T09:36:00Z</span>
+        <span class="speaker-badge">Richard:</span>
+        <div class="log-content">
+            <div>Ellen. My younger brother, Robbie. He goes to high school. This is my sister Susan. She works for a toy company. Here&#x27;s my grandfather. He lives in Florida. And this is my wife Marilyn.</div>
+            <div class="log-content-cn">Ellen。这是我弟弟Robbie。他在上高中。这是我妹妹Susan。她在一家玩具公司工作。这是我祖父, 他住在在Florida。这是我太太Marilyn。</div>
+        </div>
+    </div>
+    <div class="log-line" id="log-33" onclick="seekTo(99)">
+        <span class="timestamp">2026-03-11T09:39:00Z</span>
+        <span class="speaker-badge">Alexandra:</span>
+        <div class="log-content">
+            <div>Oh, she&#x27;s very pretty.</div>
+            <div class="log-content-cn">噢，她很漂亮。</div>
+        </div>
+    </div>
+    <div class="log-line" id="log-34" onclick="seekTo(102)">
+        <span class="timestamp">2026-03-11T09:42:00Z</span>
+        <span class="speaker-badge">Richard:</span>
+        <div class="log-content">
+            <div>Thanks. And what about your family?</div>
+            <div class="log-content-cn">谢谢。那你的家庭呢?</div>
+        </div>
+    </div>
+    <div class="log-line" id="log-35" onclick="seekTo(105)">
+        <span class="timestamp">2026-03-11T09:45:00Z</span>
+        <span class="speaker-badge">Alexandra:</span>
+        <div class="log-content">
+            <div>They&#x27;re in Thessaloniki. That&#x27;s a large city in northern Greece. But now I&#x27;m living in the Bronx.</div>
+            <div class="log-content-cn">他们住在Thessaloniki。那是希腊北部的一个大城市。但现在我住在Bronx。</div>
+        </div>
+    </div>
+    <div class="log-line" id="log-36" onclick="seekTo(108)">
+        <span class="timestamp">2026-03-11T09:48:00Z</span>
+        <span class="speaker-badge">Richard:</span>
+        <div class="log-content">
+            <div>With a Greek-American family?</div>
+            <div class="log-content-cn">跟希裔美国家庭住吗?</div>
+        </div>
+    </div>
+    <div class="log-line" id="log-37" onclick="seekTo(111)">
+        <span class="timestamp">2026-03-11T09:51:00Z</span>
+        <span class="speaker-badge">Alexandra:</span>
+        <div class="log-content">
+            <div>No. Hispanic.</div>
+            <div class="log-content-cn">不是，是西班牙语裔家庭。</div>
+        </div>
+    </div>
+    <div class="log-line" id="log-38" onclick="seekTo(114)">
+        <span class="timestamp">2026-03-11T09:54:00Z</span>
+        <span class="speaker-badge">Richard:</span>
+        <div class="log-content">
+            <div>Oh no! It&#x27;s five thirty. Will you excuse me? I have to meet my wife.</div>
+            <div class="log-content-cn">哎呀，已经五点半了。我失陪了。我得去接我太太。</div>
+        </div>
+    </div>
+    <div class="log-line" id="log-39" onclick="seekTo(117)">
+        <span class="timestamp">2026-03-11T09:57:00Z</span>
+        <span class="speaker-badge">Alexandra:</span>
+        <div class="log-content">
+            <div>It was nice meeting you.</div>
+            <div class="log-content-cn">非常高兴遇见你。</div>
+        </div>
+    </div>
+    <div class="log-line" id="log-40" onclick="seekTo(120)">
+        <span class="timestamp">2026-03-11T10:00:00Z</span>
+        <span class="speaker-badge">Richard:</span>
+        <div class="log-content">
+            <div>It was a pleasure meeting you, too. Thanks for your help. And good luck! I&#x27;ve got to go. By the way. I&#x27;m Richard. What&#x27;s your name?</div>
+            <div class="log-content-cn">我也很高兴碰到你。谢谢你的帮助。祝你好运，我得走了。噢,我忘了说,我叫理查德。你呢?</div>
+        </div>
+    </div>
+    <div class="log-line" id="log-41" onclick="seekTo(123)">
+        <span class="timestamp">2026-03-11T10:03:00Z</span>
+        <span class="speaker-badge">Alexandra:</span>
+        <div class="log-content">
+            <div>Alexandra.</div>
+            <div class="log-content-cn">亚力山德拉。</div>
+        </div>
+    </div>
+    <div class="log-line" id="log-42" onclick="seekTo(126)">
+        <span class="timestamp">2026-03-11T10:06:00Z</span>
+        <span class="speaker-badge">Richard:</span>
+        <div class="log-content">
+            <div>Bye-bye, Alexandra. Thanks.</div>
+            <div class="log-content-cn">再见，亚力山德拉。谢谢。</div>
+        </div>
+    </div>
+    <div class="log-line" id="log-43" onclick="seekTo(129)">
+        <span class="timestamp">2026-03-11T10:09:00Z</span>
+        <span class="speaker-badge">Alexandra:</span>
+        <div class="log-content">
+            <div>Bye-bye. Richard! Richard! You left your bag.</div>
+            <div class="log-content-cn">再见，理查德！理查德！你掉了一个旅行袋！</div>
+        </div>
+    </div>
+</div>
+
+<div id="player-bar">
+    <div class="player-controls">
+        <button class="player-btn" onclick="skip(-10)" title="Rewind 10s">⏪</button>
+        <button class="player-btn play-btn" id="playBtn" onclick="togglePlay()" title="Play/Pause">▶</button>
+        <button class="player-btn" onclick="skip(10)" title="Forward 10s">⏩</button>
+    </div>
+    <div class="progress-container">
+        <span class="time-display" id="current-time">00:00</span>
+        <div class="progress-bar" onclick="seek(event)">
+            <div class="progress-fill" id="progress-fill"></div>
+        </div>
+        <span class="time-display" id="duration">00:00</span>
+    </div>
+    <div class="volume-control">
+        <span style="color: #8b949e; font-size: 14px;">🔊</span>
+        <input type="range" class="volume-slider" min="0" max="100" value="80" oninput="setVolume(this.value)">
+    </div>
+</div>
+
+<audio id="audio-element" preload="metadata">
+    <source src="audio.mp3" type="audio/mpeg">
+</audio>
+
+<script>
+const subtitles = [{"id": 1, "speaker": "Richard:", "en": "Excuse me. My name is Richard Stewart. I'm a photographer. May I take a picture of you and your little boy?", "cn": "对不起。我叫理查德 • 斯图尔特。我是一位摄影师。我可以给你和你的小男孩儿拍一张照片吗？"}, {"id": 2, "speaker": "Mrs.Vann:", "en": "What's it for?", "cn": "做什么用呢？"}, {"id": 3, "speaker": "Richard:", "en": "It's for a book.", "cn": "用在一本书里。"}, {"id": 4, "speaker": "Mrs.Vann:", "en": "You're writing a book?", "cn": "你在写一本书吗?"}, {"id": 5, "speaker": "Richard:", "en": "It's a book of pictures. I call it Family Album, U.S.A.", "cn": "是一本摄影集。我把它叫作《走遍美国》。"}, {"id": 6, "speaker": "Mrs.Vann:", "en": "Oh, that's a nice idea. Well, it's fine if you take our picture. I'm Martha Vann.", "cn": "噢，这想法不错。好吧，你要给我们照相，那很好。我叫Martha Vann。"}, {"id": 7, "speaker": "Richard:", "en": "Thank you. I appreciate your help. I'm Richard. What's your name?", "cn": "谢谢。很感谢你的帮助。我是Richard，你叫什么？"}, {"id": 8, "speaker": "Gerald:", "en": "Gerald.", "cn": "Gerald。"}, {"id": 9, "speaker": "Richard:", "en": "How old are you, Gerald?", "cn": "你今年多大？"}, {"id": 10, "speaker": "Gerald:", "en": "Five.", "cn": "五岁。"}, {"id": 11, "speaker": "Richard:", "en": "And where do you live?", "cn": "你们住哪？"}, {"id": 12, "speaker": "Mrs.Vann:", "en": "We live in California.", "cn": "我们住在加利福尼亚州 。"}, {"id": 13, "speaker": "Richard:", "en": "Well, welcome to New York. OK, just a second. I'm almost ready here.", "cn": "噢，欢迎你们到纽约来。好了，请稍等一下。我快要准备好了。"}, {"id": 14, "speaker": "Alexadra:", "en": "Can I help you?", "cn": "我能帮你忙吗？"}, {"id": 15, "speaker": "Richard:", "en": "Oh, please. Hold Gerald's hand, please. Great! Now point to the buildings. Terrific! Give Mommy a kiss, Gerald. Nice! Thank you, Gerald. And thank you, Mrs Vann.", "cn": "噢，太好了，请握住Gerald的手。很好！现在请指着那些建筑物。好极了！亲一亲妈咪，很棒！谢谢你， Gerald。谢谢，Vann太太。"}, {"id": 16, "speaker": "Mrs.Vann:", "en": "Oh, my pleasure. We'll be looking for your book.", "cn": "噢，不客气。我们一定去买你的书。"}, {"id": 17, "speaker": "Richard:", "en": "Thank you. Good-bye. Bye, Gerald. Thanks again.", "cn": "谢谢。再见。Gerald，再见。再次感谢 。"}, {"id": 18, "speaker": "Alexandra:", "en": "Oh, you're welcome.", "cn": "噢 ，请别客气。"}, {"id": 19, "speaker": "Richard:", "en": "Hey, let me take your picture!", "cn": "嘿 ，让我给你拍一张照片。"}, {"id": 20, "speaker": "Alexandra:", "en": "Wonderful. Please.", "cn": "好啊，请。"}, {"id": 21, "speaker": "Richard:", "en": "Are you from New York?", "cn": "是从纽约来的吗？"}, {"id": 22, "speaker": "Alexandra:", "en": "No, I'm from Greece. I'm an exchange student.", "cn": "不是，我是从希腊来的。我是一名交换学生。"}, {"id": 23, "speaker": "Richard:", "en": "When did you come here?", "cn": "是什么时候来这儿的？"}, {"id": 24, "speaker": "Alexandra:", "en": "Three months ago.", "cn": "三个月之前。"}, {"id": 25, "speaker": "Richard:", "en": "Your English is very good.", "cn": "你的英语说得很好。"}, {"id": 26, "speaker": "Alexandra:", "en": "Thanks. I studied English in school.", "cn": "谢谢夸奖。我是在学校里学的英语。"}, {"id": 27, "speaker": "Richard:", "en": "Would you like some coffee?", "cn": "要不要来点咖啡？"}, {"id": 28, "speaker": "Alexandra:", "en": "No, thank you. Tell me about your book.", "cn": "不用了，谢谢。谈谈你的书吧。"}, {"id": 29, "speaker": "Richard:", "en": "Oh, it's not finished yet, but I have some of the pictures. Would you like to see them?", "cn": "噢，它尚未完成。但我手头有一些照片。要不要看一看？"}, {"id": 30, "speaker": "Alexandra:", "en": "Yes, I'd like that.", "cn": "要啊，我想看一看。"}, {"id": 31, "speaker": "Richard:", "en": "Here they are. Family Album, U.S.A.. It's an album of pictures of the United States: the cities, the special places, and the people. And these are pictures of people working: steel workers, bankers, police, street vendors, ambulance drivers, doctors...Oh, this is my father. He's a doctor. This is my mother.", "cn": "就在这。走遍美国是关于美国的一些城市、一些特别的地方以及人们的摄影选辑。这是人们工作中的照片：钢架工人、银行职员、警察、街头小贩、救护车驾驶员、医生等等……噢，这是我父亲。他是一名医生。这是我母亲。"}, {"id": 32, "speaker": "Alexandra:", "en": "What's her name?", "cn": "她叫什么名字？"}, {"id": 33, "speaker": "Richard:", "en": "Ellen. My younger brother, Robbie. He goes to high school. This is my sister Susan. She works for a toy company. Here's my grandfather. He lives in Florida. And this is my wife Marilyn.", "cn": "Ellen。这是我弟弟Robbie。他在上高中。这是我妹妹Susan。她在一家玩具公司工作。这是我祖父, 他住在在Florida。这是我太太Marilyn。"}, {"id": 34, "speaker": "Alexandra:", "en": "Oh, she's very pretty.", "cn": "噢，她很漂亮。"}, {"id": 35, "speaker": "Richard:", "en": "Thanks. And what about your family?", "cn": "谢谢。那你的家庭呢?"}, {"id": 36, "speaker": "Alexandra:", "en": "They're in Thessaloniki. That's a large city in northern Greece. But now I'm living in the Bronx.", "cn": "他们住在Thessaloniki。那是希腊北部的一个大城市。但现在我住在Bronx。"}, {"id": 37, "speaker": "Richard:", "en": "With a Greek-American family?", "cn": "跟希裔美国家庭住吗?"}, {"id": 38, "speaker": "Alexandra:", "en": "No. Hispanic.", "cn": "不是，是西班牙语裔家庭。"}, {"id": 39, "speaker": "Richard:", "en": "Oh no! It's five thirty. Will you excuse me? I have to meet my wife.", "cn": "哎呀，已经五点半了。我失陪了。我得去接我太太。"}, {"id": 40, "speaker": "Alexandra:", "en": "It was nice meeting you.", "cn": "非常高兴遇见你。"}, {"id": 41, "speaker": "Richard:", "en": "It was a pleasure meeting you, too. Thanks for your help. And good luck! I've got to go. By the way. I'm Richard. What's your name?", "cn": "我也很高兴碰到你。谢谢你的帮助。祝你好运，我得走了。噢,我忘了说,我叫理查德。你呢?"}, {"id": 42, "speaker": "Alexandra:", "en": "Alexandra.", "cn": "亚力山德拉。"}, {"id": 43, "speaker": "Richard:", "en": "Bye-bye, Alexandra. Thanks.", "cn": "再见，亚力山德拉。谢谢。"}, {"id": 44, "speaker": "Alexandra:", "en": "Bye-bye. Richard! Richard! You left your bag.", "cn": "再见，理查德！理查德！你掉了一个旅行袋！"}];
+let currentIndex = -1;
+let isPlaying = false;
+let showChinese = false;
+let activeRow = null;
+
+const audio = document.getElementById('audio-element');
+const playBtn = document.getElementById('playBtn');
+const progressFill = document.getElementById('progress-fill');
+const currentTimeEl = document.getElementById('current-time');
+const durationEl = document.getElementById('duration');
+const logContainer = document.getElementById('log-container');
+
+function init() {
+    renderLogs();
+    audio.addEventListener('loadedmetadata', () => {
+        durationEl.textContent = formatTime(audio.duration);
+    });
+    audio.addEventListener('timeupdate', updateProgress);
+    audio.addEventListener('ended', () => {
+        isPlaying = false;
+        playBtn.textContent = '▶';
+    });
+    document.addEventListener('keydown', handleKeydown);
+}
+
+function renderLogs() {
+    // Logs already rendered in HTML
+}
+
+function updateProgress() {
+    const current = audio.currentTime;
+    const duration = audio.duration;
+    if (duration) {
+        const percent = (current / duration) * 100;
+        progressFill.style.width = percent + '%';
+        currentTimeEl.textContent = formatTime(current);
+        updateActiveLine(current);
+    }
+}
+
+function updateActiveLine(time) {
+    let newIndex = Math.floor(time / 3);
+    if (newIndex >= subtitles.length) newIndex = subtitles.length - 1;
+    if (newIndex !== currentIndex) {
+        if (activeRow) activeRow.classList.remove('active');
+        activeRow = document.getElementById(`log-${newIndex}`);
+        if (activeRow) {
+            activeRow.classList.add('active');
+            activeRow.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+        currentIndex = newIndex;
+    }
+}
+
+function formatTime(seconds) {
+    const mins = Math.floor(seconds / 60);
+    const secs = Math.floor(seconds % 60);
+    return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+}
+
+function togglePlay() {
+    if (isPlaying) {
+        audio.pause();
+        playBtn.textContent = '▶';
+    } else {
+        audio.play();
+        playBtn.textContent = '⏸';
+    }
+    isPlaying = !isPlaying;
+}
+
+function skip(seconds) {
+    audio.currentTime = Math.max(0, Math.min(audio.duration, audio.currentTime + seconds));
+}
+
+function seek(event) {
+    const rect = event.target.getBoundingClientRect();
+    const percent = (event.clientX - rect.left) / rect.width;
+    audio.currentTime = percent * audio.duration;
+}
+
+function seekTo(time) {
+    audio.currentTime = time;
+    if (!isPlaying) togglePlay();
+}
+
+function setVolume(value) {
+    audio.volume = value / 100;
+}
+
+function toggleChinese() {
+    showChinese = !showChinese;
+    document.getElementById('toggleCn').classList.toggle('active', showChinese);
+    document.getElementById('toggleCn').textContent = showChinese ? 'Hide Translation' : 'Show Translation';
+    if (showChinese) logContainer.classList.add('show-cn');
+    else logContainer.classList.remove('show-cn');
+}
+
+function handleKeydown(e) {
+    if (e.target.tagName === 'INPUT' || e.target.tagName === 'SELECT') return;
+    switch(e.code) {
+        case 'Space': e.preventDefault(); togglePlay(); break;
+        case 'ArrowLeft': skip(-5); break;
+        case 'ArrowRight': skip(5); break;
+        case 'ArrowUp': if (currentIndex > 0) seekTo(subtitles[currentIndex - 1].time || (currentIndex - 1) * 3); break;
+        case 'ArrowDown': if (currentIndex < subtitles.length - 1) seekTo(subtitles[currentIndex + 1].time || (currentIndex + 1) * 3); break;
+    }
+}
+
+init();
+</script>
+
+</body>
+</html>
