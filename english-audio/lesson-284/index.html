@@ -74,7 +74,7 @@
             font-size: 10px;
         }
         #log-container {
-            max-height: calc(100vh - 180px);
+            max-height: calc(100vh - 140px);
             overflow-y: auto;
             padding-right: 8px;
         }
@@ -206,7 +206,6 @@
         }
         .toggle-cn:hover { border-color: #8b949e; color: #c9d1d9; }
         .toggle-cn.active { background: #1f6feb; border-color: #1f6feb; color: #fff; }
-        #audio-element { display: none; }
         .nav-links { display: flex; gap: 8px; margin-left: 16px; }
         .nav-btn {
             background: #21262d;
@@ -218,6 +217,11 @@
             font-size: 11px;
         }
         .nav-btn:hover { border-color: #8b949e; }
+        .status-display {
+            color: #3fb950;
+            font-size: 11px;
+            margin-left: 8px;
+        }
     </style>
 </head>
 <body>
@@ -230,15 +234,15 @@
         </div>
         <span style="color: #8b949e;">session logs:</span>
         <select id="lesson-select" onchange="location.href=this.value">
-            <option value="lesson-283/" >Session-283 (Lesson 1)</option>
-            <option value="lesson-284/" selected>Session-284 (Lesson 2)</option>
-            <option value="lesson-285/" >Session-285 (Lesson 3)</option>
-            <option value="lesson-286/" >Session-286 (Lesson 4)</option>
-            <option value="lesson-287/" >Session-287 (Lesson 5)</option>
+<option value="/github-pages-demo/english-audio/lesson-283/" >Session-283 (Lesson 1)</option>
+<option value="/github-pages-demo/english-audio/lesson-284/" selected>Session-284 (Lesson 2)</option>
+<option value="/github-pages-demo/english-audio/lesson-285/" >Session-285 (Lesson 3)</option>
+<option value="/github-pages-demo/english-audio/lesson-286/" >Session-286 (Lesson 4)</option>
+<option value="/github-pages-demo/english-audio/lesson-287/" >Session-287 (Lesson 5)</option>
         </select>
         <div class="nav-links">
             <a href="../" class="nav-btn">← Index</a>
-            <a href="../english-audio/" class="nav-btn">Dashboard</a>
+            <a href="../../" class="nav-btn">Dashboard</a>
         </div>
     </div>
     <div id="controls-hint">
@@ -528,6 +532,7 @@
             <div class="progress-fill" id="progress-fill"></div>
         </div>
         <span class="time-display" id="duration">00:00</span>
+        <span class="status-display" id="status-text">● REC</span>
     </div>
     <div class="volume-control">
         <span style="color: #8b949e; font-size: 14px;">🔊</span>
@@ -535,7 +540,8 @@
     </div>
 </div>
 
-<audio id="audio-element" preload="metadata">
+<!-- Hidden audio element -->
+<audio id="audio-element" preload="metadata" style="display:none;">
     <source src="audio.mp3" type="audio/mpeg">
 </audio>
 
@@ -551,23 +557,37 @@ const playBtn = document.getElementById('playBtn');
 const progressFill = document.getElementById('progress-fill');
 const currentTimeEl = document.getElementById('current-time');
 const durationEl = document.getElementById('duration');
+const statusText = document.getElementById('status-text');
 const logContainer = document.getElementById('log-container');
 
 function init() {
-    renderLogs();
     audio.addEventListener('loadedmetadata', () => {
         durationEl.textContent = formatTime(audio.duration);
     });
     audio.addEventListener('timeupdate', updateProgress);
-    audio.addEventListener('ended', () => {
-        isPlaying = false;
+    audio.addEventListener('play', () => {
+        playBtn.textContent = '⏸';
+        statusText.textContent = '● LIVE';
+        isPlaying = true;
+    });
+    audio.addEventListener('pause', () => {
         playBtn.textContent = '▶';
+        statusText.textContent = '● PAUSED';
+        isPlaying = false;
+    });
+    audio.addEventListener('ended', () => {
+        playBtn.textContent = '▶';
+        statusText.textContent = '● DONE';
+        isPlaying = false;
     });
     document.addEventListener('keydown', handleKeydown);
-}
-
-function renderLogs() {
-    // Logs already rendered in HTML
+    
+    // Auto-play on first interaction
+    document.addEventListener('click', () => {
+        if (audio.paused && !audio.played.length) {
+            audio.play().catch(e => console.log('Auto-play prevented'));
+        }
+    }, { once: true });
 }
 
 function updateProgress() {
@@ -604,12 +624,9 @@ function formatTime(seconds) {
 function togglePlay() {
     if (isPlaying) {
         audio.pause();
-        playBtn.textContent = '▶';
     } else {
         audio.play();
-        playBtn.textContent = '⏸';
     }
-    isPlaying = !isPlaying;
 }
 
 function skip(seconds) {
@@ -624,7 +641,7 @@ function seek(event) {
 
 function seekTo(time) {
     audio.currentTime = time;
-    if (!isPlaying) togglePlay();
+    if (audio.paused) audio.play();
 }
 
 function setVolume(value) {
@@ -642,11 +659,26 @@ function toggleChinese() {
 function handleKeydown(e) {
     if (e.target.tagName === 'INPUT' || e.target.tagName === 'SELECT') return;
     switch(e.code) {
-        case 'Space': e.preventDefault(); togglePlay(); break;
-        case 'ArrowLeft': skip(-5); break;
-        case 'ArrowRight': skip(5); break;
-        case 'ArrowUp': if (currentIndex > 0) seekTo(subtitles[currentIndex - 1].time || (currentIndex - 1) * 3); break;
-        case 'ArrowDown': if (currentIndex < subtitles.length - 1) seekTo(subtitles[currentIndex + 1].time || (currentIndex + 1) * 3); break;
+        case 'Space': 
+            e.preventDefault(); 
+            togglePlay(); 
+            break;
+        case 'ArrowLeft': 
+            skip(-5); 
+            break;
+        case 'ArrowRight': 
+            skip(5); 
+            break;
+        case 'ArrowUp': 
+            if (currentIndex > 0) {
+                seekTo(Math.max(0, (currentIndex - 1) * 3));
+            }
+            break;
+        case 'ArrowDown': 
+            if (currentIndex < subtitles.length - 1) {
+                seekTo(Math.min(audio.duration, (currentIndex + 1) * 3));
+            }
+            break;
     }
 }
 
