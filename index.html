@@ -41,22 +41,55 @@
             padding: 30px;
             margin-bottom: 30px;
             text-align: center;
+            position: sticky;
+            top: 20px;
+            z-index: 100;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
         }
         audio {
             width: 100%;
             margin-top: 20px;
         }
+        .progress-bar {
+            width: 100%;
+            height: 6px;
+            background: #e0e0e0;
+            border-radius: 3px;
+            margin-top: 15px;
+            overflow: hidden;
+        }
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            width: 0%;
+            transition: width 0.1s linear;
+        }
+        .dialogue-section {
+            margin-top: 30px;
+        }
         .dialogue {
             background: #fff;
-            border: 1px solid #e0e0e0;
+            border: 2px solid #e0e0e0;
             border-radius: 10px;
-            padding: 20px;
-            margin-bottom: 15px;
+            padding: 15px 20px;
+            margin-bottom: 12px;
+            transition: all 0.3s ease;
+        }
+        .dialogue.active {
+            border-color: #667eea;
+            background: linear-gradient(135deg, #f5f7ff 0%, #f0f2ff 100%);
+            transform: scale(1.02);
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+        }
+        .dialogue.passed {
+            opacity: 0.6;
+            border-color: #d0d0d0;
         }
         .speaker {
             font-weight: bold;
             color: #667eea;
             margin-bottom: 8px;
+            font-size: 0.9em;
         }
         .en {
             color: #333;
@@ -104,6 +137,34 @@
         .info li {
             margin-bottom: 5px;
         }
+        .controls {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            margin-top: 15px;
+        }
+        .controls button {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 20px;
+            background: #667eea;
+            color: white;
+            cursor: pointer;
+            font-size: 0.9em;
+            transition: all 0.2s;
+        }
+        .controls button:hover {
+            background: #5a6fd6;
+            transform: translateY(-2px);
+        }
+        .controls button.active {
+            background: #764ba2;
+        }
+        .time-display {
+            font-size: 0.85em;
+            color: #666;
+            margin-top: 10px;
+        }
     </style>
 </head>
 <body>
@@ -113,309 +174,320 @@
         
         <div class="player-section">
             <h2>📻 音频播放</h2>
-            <audio controls preload="metadata">
+            <audio id="audioPlayer" preload="metadata">
                 <source src="audio.mp3" type="audio/mpeg">
                 您的浏览器不支持音频播放
             </audio>
+            <div class="progress-bar">
+                <div class="progress-fill" id="progressFill"></div>
+            </div>
+            <div class="time-display">
+                <span id="currentTime">0:00</span> / <span id="duration">0:00</span>
+            </div>
+            <div class="controls">
+                <button id="autoScrollBtn" class="active" onclick="toggleAutoScroll()">📜 自动滚动：开</button>
+                <button onclick="rewind10()">⏪ -10 秒</button>
+                <button onclick="forward10()">+10 秒 ⏩</button>
+            </div>
             <div class="badge">来源：ncego.com</div>
         </div>
 
-        <h2 style="margin: 30px 0 20px; color: #333;">📝 字幕/剧本</h2>
+        <div class="dialogue-section" id="dialogueSection">
+            <div class="scene" data-start="0" data-end="3">[ She takes the tea kettle off the stove. ]</div>
 
-        <div class="scene">[ She takes the tea kettle off the stove. ]</div>
+            <div class="dialogue" data-start="3" data-end="6">
+                <div class="speaker">Ellen:</div>
+                <div class="en">Marilyn, you want coffee or tea?</div>
+                <div class="cn">玛丽琳，你喝咖啡还是喝茶？</div>
+            </div>
 
-        <div class="dialogue">
-            <div class="speaker">Ellen:</div>
-            <div class="en">Marilyn, you want coffee or tea?</div>
-            <div class="cn">玛丽琳，你喝咖啡还是喝茶？</div>
-        </div>
+            <div class="dialogue" data-start="6" data-end="8">
+                <div class="speaker">Marilyn:</div>
+                <div class="en">Coffee, please.</div>
+                <div class="cn">请给我咖啡。</div>
+            </div>
 
-        <div class="dialogue">
-            <div class="speaker">Marilyn:</div>
-            <div class="en">Coffee, please.</div>
-            <div class="cn">请给我咖啡。</div>
-        </div>
+            <div class="dialogue" data-start="8" data-end="13">
+                <div class="speaker">Ellen:</div>
+                <div class="en">I am so excited! At this time tomorrow morning, Grandpa will be sitting in the kitchen with us.</div>
+                <div class="cn">我太激动了！明天早上的这个时候，你爷爷就会和我们一起坐在这厨房里啦。</div>
+            </div>
 
-        <div class="dialogue">
-            <div class="speaker">Ellen:</div>
-            <div class="en">I am so excited! At this time tomorrow morning, Grandpa will be sitting in the kitchen with us.</div>
-            <div class="cn">我太激动了！明天早上的这个时候，你爷爷就会和我们一起坐在这厨房里啦。</div>
-        </div>
+            <div class="dialogue" data-start="13" data-end="15">
+                <div class="speaker">Marilyn:</div>
+                <div class="en">When does he arrive?</div>
+                <div class="cn">他什么时候到？</div>
+            </div>
 
-        <div class="dialogue">
-            <div class="speaker">Marilyn:</div>
-            <div class="en">When does he arrive?</div>
-            <div class="cn">他什么时候到？</div>
-        </div>
+            <div class="dialogue" data-start="15" data-end="18">
+                <div class="speaker">Ellen:</div>
+                <div class="en">At six o'clock this evening.</div>
+                <div class="cn">今天晚上 6 点。</div>
+            </div>
 
-        <div class="dialogue">
-            <div class="speaker">Ellen:</div>
-            <div class="en">At six o'clock this evening.</div>
-            <div class="cn">今天晚上 6 点。</div>
-        </div>
+            <div class="dialogue" data-start="18" data-end="20">
+                <div class="speaker">Marilyn:</div>
+                <div class="en">By plane?</div>
+                <div class="cn">是坐飞机来吗？</div>
+            </div>
 
-        <div class="dialogue">
-            <div class="speaker">Marilyn:</div>
-            <div class="en">By plane?</div>
-            <div class="cn">是坐飞机来吗？</div>
-        </div>
+            <div class="dialogue" data-start="20" data-end="22">
+                <div class="speaker">Ellen:</div>
+                <div class="en">No, by train.</div>
+                <div class="cn">不，是坐火车来。</div>
+            </div>
 
-        <div class="dialogue">
-            <div class="speaker">Ellen:</div>
-            <div class="en">No, by train.</div>
-            <div class="cn">不，是坐火车来。</div>
-        </div>
+            <div class="dialogue" data-start="22" data-end="25">
+                <div class="speaker">Marilyn:</div>
+                <div class="en">Are we picking him up at the station?</div>
+                <div class="cn">我们去车站接他吗？</div>
+            </div>
 
-        <div class="dialogue">
-            <div class="speaker">Marilyn:</div>
-            <div class="en">Are we picking him up at the station?</div>
-            <div class="cn">我们去车站接他吗？</div>
-        </div>
+            <div class="dialogue" data-start="25" data-end="30">
+                <div class="speaker">Ellen:</div>
+                <div class="en">Not Grandpa. He doesn't want anybody picking him up. He likes to be independent.</div>
+                <div class="cn">你爷爷可不需要，他不愿意让别人接他，他喜欢独来独往。</div>
+            </div>
 
-        <div class="dialogue">
-            <div class="speaker">Ellen:</div>
-            <div class="en">Not Grandpa. He doesn't want anybody picking him up. He likes to be independent.</div>
-            <div class="cn">你爷爷可不需要，他不愿意让别人接他，他喜欢独来独往。</div>
-        </div>
+            <div class="dialogue" data-start="30" data-end="32">
+                <div class="speaker">Marilyn:</div>
+                <div class="en">Huh.</div>
+                <div class="cn">哦。</div>
+            </div>
 
-        <div class="dialogue">
-            <div class="speaker">Marilyn:</div>
-            <div class="en">Huh.</div>
-            <div class="cn">哦。</div>
-        </div>
+            <div class="dialogue" data-start="32" data-end="36">
+                <div class="speaker">Ellen:</div>
+                <div class="en">Oh, let's go upstairs and prepare Grandpa's room.</div>
+                <div class="cn">噢，咱们上楼去给爷爷收拾一下房间吧。</div>
+            </div>
 
-        <div class="dialogue">
-            <div class="speaker">Ellen:</div>
-            <div class="en">Oh, let's go upstairs and prepare Grandpa's room.</div>
-            <div class="cn">噢，咱们上楼去给爷爷收拾一下房间吧。</div>
-        </div>
+            <div class="dialogue" data-start="36" data-end="38">
+                <div class="speaker">Marilyn:</div>
+                <div class="en">Great! Let's do it!</div>
+                <div class="cn">好极了！走吧。</div>
+            </div>
 
-        <div class="dialogue">
-            <div class="speaker">Marilyn:</div>
-            <div class="en">Great! Let's do it!</div>
-            <div class="cn">好极了！走吧。</div>
-        </div>
+            <div class="scene" data-start="38" data-end="40">[ Ellen and Marilyn get up to leave. Richard and Robbie enter the kitchen. ]</div>
 
-        <div class="scene">[ Ellen and Marilyn get up to leave. Richard and Robbie enter the kitchen. ]</div>
+            <div class="dialogue" data-start="40" data-end="43">
+                <div class="speaker">Richard:</div>
+                <div class="en">Good morning, Mom.</div>
+                <div class="cn">妈妈，早上好。</div>
+            </div>
 
-        <div class="dialogue">
-            <div class="speaker">Richard:</div>
-            <div class="en">Good morning, Mom.</div>
-            <div class="cn">妈妈，早上好。</div>
-        </div>
+            <div class="dialogue" data-start="43" data-end="45">
+                <div class="speaker">Robbie:</div>
+                <div class="en">Morning.</div>
+                <div class="cn">早安。</div>
+            </div>
 
-        <div class="dialogue">
-            <div class="speaker">Robbie:</div>
-            <div class="en">Morning.</div>
-            <div class="cn">早安。</div>
-        </div>
+            <div class="dialogue" data-start="45" data-end="48">
+                <div class="speaker">Ellen:</div>
+                <div class="en">Well, hi, fellas.</div>
+                <div class="cn">噢，嗨，伙计们。</div>
+            </div>
 
-        <div class="dialogue">
-            <div class="speaker">Ellen:</div>
-            <div class="en">Well, hi, fellas.</div>
-            <div class="cn">噢，嗨，伙计们。</div>
-        </div>
+            <div class="dialogue" data-start="48" data-end="50">
+                <div class="speaker">Richard:</div>
+                <div class="en">Hello.</div>
+                <div class="cn">喂。早上好！</div>
+            </div>
 
-        <div class="dialogue">
-            <div class="speaker">Richard:</div>
-            <div class="en">Hello.</div>
-            <div class="cn">喂。早上好！</div>
-        </div>
+            <div class="dialogue" data-start="50" data-end="53">
+                <div class="speaker">Marilyn:</div>
+                <div class="en">Hi, honey.</div>
+                <div class="cn">嗨，亲爱的。</div>
+            </div>
 
-        <div class="dialogue">
-            <div class="speaker">Marilyn:</div>
-            <div class="en">Hi, honey.</div>
-            <div class="cn">嗨，亲爱的。</div>
-        </div>
+            <div class="dialogue" data-start="53" data-end="56">
+                <div class="speaker">Richard & Robbie:</div>
+                <div class="en">Morning, Marilyn.</div>
+                <div class="cn">玛丽琳，早上好。</div>
+            </div>
 
-        <div class="dialogue">
-            <div class="speaker">Richard & Robbie:</div>
-            <div class="en">Morning, Marilyn.</div>
-            <div class="cn">玛丽琳，早上好。</div>
-        </div>
+            <div class="dialogue" data-start="56" data-end="61">
+                <div class="speaker">Marilyn:</div>
+                <div class="en">We are going upstairs to set up Grandpa's room. There's coffee ready.</div>
+                <div class="cn">我们要上楼去收拾一下爷爷的房间，咖啡已经准备好了。</div>
+            </div>
 
-        <div class="dialogue">
-            <div class="speaker">Marilyn:</div>
-            <div class="en">We are going upstairs to set up Grandpa's room. There's coffee ready.</div>
-            <div class="cn">我们要上楼去收拾一下爷爷的房间，咖啡已经准备好了。</div>
-        </div>
+            <div class="scene" data-start="61" data-end="63">[ Ellen and Marilyn go upstairs. Richard and Robbie begin to make breakfast. ]</div>
 
-        <div class="scene">[ Ellen and Marilyn go upstairs. Richard and Robbie begin to make breakfast. ]</div>
+            <div class="dialogue" data-start="63" data-end="67">
+                <div class="speaker">Robbie:</div>
+                <div class="en">I'm really excited about seeing Grandpa.</div>
+                <div class="cn">一想到要见到爷爷我就感到兴奋。</div>
+            </div>
 
-        <div class="dialogue">
-            <div class="speaker">Robbie:</div>
-            <div class="en">I'm really excited about seeing Grandpa.</div>
-            <div class="cn">一想到要见到爷爷我就感到兴奋。</div>
-        </div>
+            <div class="dialogue" data-start="67" data-end="70">
+                <div class="speaker">Richard:</div>
+                <div class="en">Me, too. Milk, please.</div>
+                <div class="cn">我也一样。请给我牛奶。</div>
+            </div>
 
-        <div class="dialogue">
-            <div class="speaker">Richard:</div>
-            <div class="en">Me, too. Milk, please.</div>
-            <div class="cn">我也一样。请给我牛奶。</div>
-        </div>
+            <div class="dialogue" data-start="70" data-end="76">
+                <div class="speaker">Robbie:</div>
+                <div class="en">He's so funny. He always makes me laugh. I hope Grandpa's going to like living with us.</div>
+                <div class="cn">他很有趣。他总是让我发笑。我希望爷爷喜欢和我们住在一起。</div>
+            </div>
 
-        <div class="dialogue">
-            <div class="speaker">Robbie:</div>
-            <div class="en">He's so funny. He always makes me laugh. I hope Grandpa's going to like living with us.</div>
-            <div class="cn">他很有趣。他总是让我发笑。我希望爷爷喜欢和我们住在一起。</div>
-        </div>
+            <div class="dialogue" data-start="76" data-end="82">
+                <div class="speaker">Richard:</div>
+                <div class="en">I think he will. It just takes time to feel comfortable in a new place.</div>
+                <div class="cn">我想会的，总是需要一段时间才能适应一个新的环境。</div>
+            </div>
 
-        <div class="dialogue">
-            <div class="speaker">Richard:</div>
-            <div class="en">I think he will. It just takes time to feel comfortable in a new place.</div>
-            <div class="cn">我想会的，总是需要一段时间才能适应一个新的环境。</div>
-        </div>
+            <div class="dialogue" data-start="82" data-end="85">
+                <div class="speaker">Robbie:</div>
+                <div class="en">Won't he miss being in Florida?</div>
+                <div class="cn">他不会想念佛罗里达吗？</div>
+            </div>
 
-        <div class="dialogue">
-            <div class="speaker">Robbie:</div>
-            <div class="en">Won't he miss being in Florida?</div>
-            <div class="cn">他不会想念佛罗里达吗？</div>
-        </div>
+            <div class="dialogue" data-start="85" data-end="90">
+                <div class="speaker">Richard:</div>
+                <div class="en">Well, he will. But I think he'll like being here with the family.</div>
+                <div class="cn">他会的，但我想他也会乐意和全家人住在这儿。</div>
+            </div>
 
-        <div class="dialogue">
-            <div class="speaker">Richard:</div>
-            <div class="en">Well, he will. But I think he'll like being here with the family.</div>
-            <div class="cn">他会的，但我想他也会乐意和全家人住在这儿。</div>
-        </div>
+            <div class="dialogue" data-start="90" data-end="94">
+                <div class="speaker">Robbie:</div>
+                <div class="en">Are you sure about that? It's crazy here most of the time.</div>
+                <div class="cn">你能肯定吗？这儿经常吵吵闹闹的。</div>
+            </div>
 
-        <div class="dialogue">
-            <div class="speaker">Robbie:</div>
-            <div class="en">Are you sure about that? It's crazy here most of the time.</div>
-            <div class="cn">你能肯定吗？这儿经常吵吵闹闹的。</div>
-        </div>
+            <div class="dialogue" data-start="94" data-end="96">
+                <div class="speaker">Richard:</div>
+                <div class="en">But it's fun.</div>
+                <div class="cn">但很有趣。</div>
+            </div>
 
-        <div class="dialogue">
-            <div class="speaker">Richard:</div>
-            <div class="en">But it's fun.</div>
-            <div class="cn">但很有趣。</div>
-        </div>
+            <div class="dialogue" data-start="96" data-end="98">
+                <div class="speaker">Robbie:</div>
+                <div class="en">That's for sure.</div>
+                <div class="cn">说的也是。</div>
+            </div>
 
-        <div class="dialogue">
-            <div class="speaker">Robbie:</div>
-            <div class="en">That's for sure.</div>
-            <div class="cn">说的也是。</div>
-        </div>
+            <div class="dialogue" data-start="98" data-end="103">
+                <div class="speaker">Richard:</div>
+                <div class="en">You know, maybe I'll put together some photos of Grandpa as a "welcome" present.</div>
+                <div class="cn">我说，或许我会把爷爷的一些照片集中起来作为欢迎他的一份礼物。</div>
+            </div>
 
-        <div class="dialogue">
-            <div class="speaker">Richard:</div>
-            <div class="en">You know, maybe I'll put together some photos of Grandpa as a "welcome" present.</div>
-            <div class="cn">我说，或许我会把爷爷的一些照片集中起来作为欢迎他的一份礼物。</div>
-        </div>
+            <div class="dialogue" data-start="103" data-end="106">
+                <div class="speaker">Robbie:</div>
+                <div class="en">That's a neat idea. What can I do?</div>
+                <div class="cn">这是个好主意。那么我能做点什么呢？</div>
+            </div>
 
-        <div class="dialogue">
-            <div class="speaker">Robbie:</div>
-            <div class="en">That's a neat idea. What can I do?</div>
-            <div class="cn">这是个好主意。那么我能做点什么呢？</div>
-        </div>
+            <div class="dialogue" data-start="106" data-end="114">
+                <div class="speaker">Robbie:</div>
+                <div class="en">I've got it! I have a picture of Grandpa and Dad and me in my wallet. It's from the Fathers and Sons' Breakfast at my junior high school graduation.</div>
+                <div class="cn">有啦！我皮夹里有一张照片，是爷爷、爸爸和我在一起照的。那是在父子早餐会上拍的，在我初中毕业的时候。</div>
+            </div>
 
-        <div class="dialogue">
-            <div class="speaker">Robbie:</div>
-            <div class="en">I've got it! I have a picture of Grandpa and Dad and me in my wallet. It's from the Fathers and Sons' Breakfast at my junior high school graduation.</div>
-            <div class="cn">有啦！我皮夹里有一张照片，是爷爷、爸爸和我在一起照的。那是在父子早餐会上拍的，在我初中毕业的时候。</div>
-        </div>
+            <div class="dialogue" data-start="114" data-end="117">
+                <div class="speaker">Richard:</div>
+                <div class="en">Oh, I remember this picture.</div>
+                <div class="cn">噢，我还记得那张照片。</div>
+            </div>
 
-        <div class="dialogue">
-            <div class="speaker">Richard:</div>
-            <div class="en">Oh, I remember this picture.</div>
-            <div class="cn">噢，我还记得那张照片。</div>
-        </div>
+            <div class="dialogue" data-start="117" data-end="121">
+                <div class="speaker">Robbie:</div>
+                <div class="en">I'd really like to pick up Grandpa at the railroad station.</div>
+                <div class="cn">我真想去火车站接爷爷。</div>
+            </div>
 
-        <div class="dialogue">
-            <div class="speaker">Robbie:</div>
-            <div class="en">I'd really like to pick up Grandpa at the railroad station.</div>
-            <div class="cn">我真想去火车站接爷爷。</div>
-        </div>
+            <div class="dialogue" data-start="121" data-end="126">
+                <div class="speaker">Richard:</div>
+                <div class="en">Railroad stations or airports -- Grandpa always tells us he'll get here by himself.</div>
+                <div class="cn">无论是火车站还是机场 -- 爷爷总是说他能独自来这儿。</div>
+            </div>
 
-        <div class="dialogue">
-            <div class="speaker">Richard:</div>
-            <div class="en">Railroad stations or airports -- Grandpa always tells us he'll get here by himself.</div>
-            <div class="cn">无论是火车站还是机场 -- 爷爷总是说他能独自来这儿。</div>
-        </div>
+            <div class="dialogue" data-start="126" data-end="128">
+                <div class="speaker">Robbie:</div>
+                <div class="en">He's something!</div>
+                <div class="cn">他真了不起！</div>
+            </div>
 
-        <div class="dialogue">
-            <div class="speaker">Robbie:</div>
-            <div class="en">He's something!</div>
-            <div class="cn">他真了不起！</div>
-        </div>
+            <div class="scene" data-start="128" data-end="130">[ Upstairs in the Stewarts' home. Ellen and Marilyn are preparing Grandpa's Room. ]</div>
 
-        <div class="scene">[ Upstairs in the Stewarts' home. Ellen and Marilyn are preparing Grandpa's Room. ]</div>
+            <div class="dialogue" data-start="130" data-end="133">
+                <div class="speaker">Marilyn:</div>
+                <div class="en">Is this all Grandpa's stuff?</div>
+                <div class="cn">这里面都是爷爷的东西吗？</div>
+            </div>
 
-        <div class="dialogue">
-            <div class="speaker">Marilyn:</div>
-            <div class="en">Is this all Grandpa's stuff?</div>
-            <div class="cn">这里面都是爷爷的东西吗？</div>
-        </div>
+            <div class="dialogue" data-start="133" data-end="137">
+                <div class="speaker">Ellen:</div>
+                <div class="en">That's it. But I'm sure he has a few bags with him on the train.</div>
+                <div class="cn">是的，不过我相信他在火车上还有几件行李的。</div>
+            </div>
 
-        <div class="dialogue">
-            <div class="speaker">Ellen:</div>
-            <div class="en">That's it. But I'm sure he has a few bags with him on the train.</div>
-            <div class="cn">是的，不过我相信他在火车上还有几件行李的。</div>
-        </div>
+            <div class="dialogue" data-start="137" data-end="139">
+                <div class="speaker">Marilyn:</div>
+                <div class="en">What's inside?</div>
+                <div class="cn">这里面是什么？</div>
+            </div>
 
-        <div class="dialogue">
-            <div class="speaker">Marilyn:</div>
-            <div class="en">What's inside?</div>
-            <div class="cn">这里面是什么？</div>
-        </div>
+            <div class="dialogue" data-start="139" data-end="142">
+                <div class="speaker">Ellen:</div>
+                <div class="en">I don't know. It's locked.</div>
+                <div class="cn">不知道，锁着的。</div>
+            </div>
 
-        <div class="dialogue">
-            <div class="speaker">Ellen:</div>
-            <div class="en">I don't know. It's locked.</div>
-            <div class="cn">不知道，锁着的。</div>
-        </div>
+            <div class="dialogue" data-start="142" data-end="144">
+                <div class="speaker">Philip:</div>
+                <div class="en">Hi.</div>
+                <div class="cn">嗨。</div>
+            </div>
 
-        <div class="dialogue">
-            <div class="speaker">Philip:</div>
-            <div class="en">Hi.</div>
-            <div class="cn">嗨。</div>
-        </div>
+            <div class="dialogue" data-start="144" data-end="147">
+                <div class="speaker">Ellen:</div>
+                <div class="en">Oh, hi, darling.</div>
+                <div class="cn">哦，亲爱的。</div>
+            </div>
 
-        <div class="dialogue">
-            <div class="speaker">Ellen:</div>
-            <div class="en">Oh, hi, darling.</div>
-            <div class="cn">哦，亲爱的。</div>
-        </div>
+            <div class="dialogue" data-start="147" data-end="150">
+                <div class="speaker">Marilyn:</div>
+                <div class="en">Morning, Philip.</div>
+                <div class="cn">早安，Philip。</div>
+            </div>
 
-        <div class="dialogue">
-            <div class="speaker">Marilyn:</div>
-            <div class="en">Morning, Philip.</div>
-            <div class="cn">早安，Philip。</div>
-        </div>
+            <div class="dialogue" data-start="150" data-end="156">
+                <div class="speaker">Philip:</div>
+                <div class="en">I want to put some of my good hangers in Grandpa's closet. You know I'm very excited about his arrival.</div>
+                <div class="cn">我想在爷爷的衣橱放几个好的衣架。知道我对他的到来是多么高兴。</div>
+            </div>
 
-        <div class="dialogue">
-            <div class="speaker">Philip:</div>
-            <div class="en">I want to put some of my good hangers in Grandpa's closet. You know I'm very excited about his arrival.</div>
-            <div class="cn">我想在爷爷的衣橱放几个好的衣架。知道我对他的到来是多么高兴。</div>
-        </div>
+            <div class="dialogue" data-start="156" data-end="164">
+                <div class="speaker">Ellen:</div>
+                <div class="en">We are, too. Susan called early this morning. She's unhappy because she's had to go to Chicago on a business trip and can't leave till tonight. She wants to be here for Grandpa.</div>
+                <div class="cn">我们也很兴奋。Susan 一大早就打电话来。她很不高兴，因为她得到芝加哥出差，而且要到今晚才能脱身。她原希望在家等候爷爷。</div>
+            </div>
 
-        <div class="dialogue">
-            <div class="speaker">Ellen:</div>
-            <div class="en">We are, too. Susan called early this morning. She's unhappy because she's had to go to Chicago on a business trip and can't leave till tonight. She wants to be here for Grandpa.</div>
-            <div class="cn">我们也很兴奋。Susan 一大早就打电话来。她很不高兴，因为她得到芝加哥出差，而且要到今晚才能脱身。她原希望在家等候爷爷。</div>
-        </div>
+            <div class="dialogue" data-start="164" data-end="172">
+                <div class="speaker">Philip:</div>
+                <div class="en">Well, Grandpa will be disappointed, too. He loves Susan. She always reminds him of Grandma. Well, how's everything here?</div>
+                <div class="cn">爷爷也会感到失望的。他喜欢 Susan。Susan 总是让他想起奶奶。唔，东西都收拾好了吗？</div>
+            </div>
 
-        <div class="dialogue">
-            <div class="speaker">Philip:</div>
-            <div class="en">Well, Grandpa will be disappointed, too. He loves Susan. She always reminds him of Grandma. Well, how's everything here?</div>
-            <div class="cn">爷爷也会感到失望的。他喜欢 Susan。Susan 总是让他想起奶奶。唔，东西都收拾好了吗？</div>
-        </div>
+            <div class="dialogue" data-start="172" data-end="176">
+                <div class="speaker">Marilyn:</div>
+                <div class="en">Fine. We were just wondering about this trunk.</div>
+                <div class="cn">好啦。我们正猜测这只大衣箱呢。</div>
+            </div>
 
-        <div class="dialogue">
-            <div class="speaker">Marilyn:</div>
-            <div class="en">Fine. We were just wondering about this trunk.</div>
-            <div class="cn">好啦。我们正猜测这只大衣箱呢。</div>
-        </div>
+            <div class="dialogue" data-start="176" data-end="178">
+                <div class="speaker">Ellen:</div>
+                <div class="en">It's locked.</div>
+                <div class="cn">它锁着。</div>
+            </div>
 
-        <div class="dialogue">
-            <div class="speaker">Ellen:</div>
-            <div class="en">It's locked.</div>
-            <div class="cn">它锁着。</div>
-        </div>
-
-        <div class="dialogue">
-            <div class="speaker">Philip:</div>
-            <div class="en">Oh. I have the key. Grandpa sent it to me.</div>
-            <div class="cn">啊，钥匙在这。爷爷寄来给我的。</div>
+            <div class="dialogue" data-start="178" data-end="183">
+                <div class="speaker">Philip:</div>
+                <div class="en">Oh. I have the key. Grandpa sent it to me.</div>
+                <div class="cn">啊，钥匙在这。爷爷寄来给我的。</div>
+            </div>
         </div>
 
         <div class="info">
@@ -423,11 +495,146 @@
             <ul>
                 <li><strong>来源：</strong>ncego.com - Episode 3 Grandpa's Trunk</li>
                 <li><strong>音频：</strong>已下载到本地</li>
-                <li><strong>字幕：</strong>中英双语</li>
+                <li><strong>字幕：</strong>中英双语 + 同步高亮</li>
                 <li><strong>托管：</strong>GitHub Pages（免费）</li>
                 <li><strong>更新：</strong>2026 年 3 月 11 日</li>
             </ul>
         </div>
     </div>
+
+    <script>
+        const audio = document.getElementById('audioPlayer');
+        const progressFill = document.getElementById('progressFill');
+        const currentTimeEl = document.getElementById('currentTime');
+        const durationEl = document.getElementById('duration');
+        const dialogueSection = document.getElementById('dialogueSection');
+        const autoScrollBtn = document.getElementById('autoScrollBtn');
+        
+        let autoScrollEnabled = true;
+        let dialogues = [];
+        let scenes = [];
+
+        // 初始化
+        function init() {
+            // 收集所有字幕元素
+            dialogues = Array.from(document.querySelectorAll('.dialogue'));
+            scenes = Array.from(document.querySelectorAll('.scene'));
+            
+            // 加载元数据后设置时长
+            audio.addEventListener('loadedmetadata', () => {
+                durationEl.textContent = formatTime(audio.duration);
+            });
+
+            // 时间更新事件
+            audio.addEventListener('timeupdate', updateProgress);
+
+            // 播放结束
+            audio.addEventListener('ended', () => {
+                dialogues.forEach(d => d.classList.remove('active'));
+            });
+        }
+
+        // 更新进度
+        function updateProgress() {
+            const currentTime = audio.currentTime;
+            const duration = audio.duration;
+            
+            if (duration) {
+                // 更新进度条
+                const percent = (currentTime / duration) * 100;
+                progressFill.style.width = percent + '%';
+                
+                // 更新时间显示
+                currentTimeEl.textContent = formatTime(currentTime);
+                
+                // 更新高亮
+                highlightCurrentDialogue(currentTime);
+                
+                // 自动滚动
+                if (autoScrollEnabled) {
+                    scrollToCurrentDialogue();
+                }
+            }
+        }
+
+        // 高亮当前对话
+        function highlightCurrentDialogue(time) {
+            // 检查场景
+            scenes.forEach(scene => {
+                const start = parseFloat(scene.dataset.start);
+                const end = parseFloat(scene.dataset.end);
+                if (time >= start && time < end) {
+                    scene.style.background = '#d0e8f0';
+                    scene.style.borderColor = '#667eea';
+                } else {
+                    scene.style.background = '#e8f4f8';
+                    scene.style.borderColor = 'transparent';
+                }
+            });
+
+            // 检查对话
+            dialogues.forEach(dialogue => {
+                const start = parseFloat(dialogue.dataset.start);
+                const end = parseFloat(dialogue.dataset.end);
+                
+                dialogue.classList.remove('active', 'passed');
+                
+                if (time >= start && time < end) {
+                    dialogue.classList.add('active');
+                } else if (time >= end) {
+                    dialogue.classList.add('passed');
+                }
+            });
+        }
+
+        // 滚动到当前对话
+        function scrollToCurrentDialogue() {
+            const activeDialogue = document.querySelector('.dialogue.active');
+            if (activeDialogue) {
+                const playerHeight = document.querySelector('.player-section').offsetHeight;
+                const rect = activeDialogue.getBoundingClientRect();
+                const scrollTop = window.pageYOffset + rect.top - playerHeight - 50;
+                
+                window.scrollTo({
+                    top: scrollTop,
+                    behavior: 'smooth'
+                });
+            }
+        }
+
+        // 格式化时间
+        function formatTime(seconds) {
+            const mins = Math.floor(seconds / 60);
+            const secs = Math.floor(seconds % 60);
+            return `${mins}:${secs.toString().padStart(2, '0')}`;
+        }
+
+        // 切换自动滚动
+        function toggleAutoScroll() {
+            autoScrollEnabled = !autoScrollEnabled;
+            autoScrollBtn.textContent = autoScrollEnabled ? '📜 自动滚动：开' : '📜 自动滚动：关';
+            autoScrollBtn.classList.toggle('active');
+        }
+
+        // 后退 10 秒
+        function rewind10() {
+            audio.currentTime = Math.max(0, audio.currentTime - 10);
+        }
+
+        // 前进 10 秒
+        function forward10() {
+            audio.currentTime = Math.min(audio.duration, audio.currentTime + 10);
+        }
+
+        // 点击进度条跳转
+        progressFill.parentElement.addEventListener('click', (e) => {
+            const rect = e.target.parentElement.getBoundingClientRect();
+            const percent = (e.clientX - rect.left) / rect.width;
+            audio.currentTime = percent * audio.duration;
+        });
+
+        // 初始化
+        init();
+    </script>
 </body>
 </html>
