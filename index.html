@@ -1,9 +1,10 @@
 <!DOCTYPE html>
-<html lang="zh-CN">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>阿王的学习门户</title>
+    <meta name="description" content="Personal learning and productivity hub">
+    <title>Dashboard</title>
     <style>
         * {
             margin: 0;
@@ -11,251 +12,276 @@
             box-sizing: border-box;
         }
         :root {
-            --bg-color: #f5f5f7;
-            --card-bg: #ffffff;
-            --text-primary: #1d1d1f;
-            --text-secondary: #86868b;
-            --accent: #0071e3;
-            --accent-hover: #0077ed;
+            --bg-primary: #fafafa;
+            --bg-secondary: #ffffff;
+            --text-primary: #1c1c1e;
+            --text-secondary: #6e6e73;
+            --text-tertiary: #8e8e93;
+            --accent: #5856d6;
+            --accent-soft: rgba(88, 86, 214, 0.1);
+            --border: rgba(0, 0, 0, 0.08);
+            --shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+            --shadow-hover: 0 8px 24px rgba(0, 0, 0, 0.08);
         }
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', 'Helvetica Neue', Arial, sans-serif;
-            background: var(--bg-color);
+            font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Inter', sans-serif;
+            background: var(--bg-primary);
             color: var(--text-primary);
-            line-height: 1.5;
+            line-height: 1.47059;
             -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
         }
         
         /* Navigation */
         nav {
-            background: rgba(255, 255, 255, 0.8);
+            background: rgba(255, 255, 255, 0.72);
             backdrop-filter: saturate(180%) blur(20px);
             -webkit-backdrop-filter: saturate(180%) blur(20px);
             position: sticky;
             top: 0;
             z-index: 100;
-            border-bottom: 1px solid rgba(0,0,0,0.1);
+            border-bottom: 1px solid var(--border);
         }
         .nav-content {
-            max-width: 980px;
+            max-width: 1080px;
             margin: 0 auto;
-            padding: 0 20px;
-            height: 48px;
+            padding: 0 24px;
+            height: 52px;
             display: flex;
             align-items: center;
             justify-content: space-between;
         }
         .nav-logo {
-            font-size: 1.3em;
+            font-size: 14px;
             font-weight: 600;
+            letter-spacing: -0.01em;
             color: var(--text-primary);
             text-decoration: none;
         }
         .nav-links {
             display: flex;
-            gap: 24px;
+            gap: 32px;
         }
         .nav-links a {
             color: var(--text-secondary);
             text-decoration: none;
-            font-size: 0.85em;
-            transition: color 0.2s;
+            font-size: 13px;
+            font-weight: 400;
+            transition: color 0.2s ease;
         }
         .nav-links a:hover {
-            color: var(--accent);
+            color: var(--text-primary);
         }
         
-        /* Hero Section */
+        /* Hero */
         .hero {
-            background: var(--card-bg);
-            padding: 80px 20px 60px;
+            background: var(--bg-secondary);
+            padding: 72px 24px 56px;
             text-align: center;
+            border-bottom: 1px solid var(--border);
         }
         .hero-emoji {
-            font-size: 4em;
-            margin-bottom: 20px;
+            font-size: 40px;
+            margin-bottom: 16px;
+            display: block;
         }
         .hero h1 {
-            font-size: clamp(2.5em, 5vw, 3.5em);
-            font-weight: 700;
+            font-size: clamp(28px, 5vw, 40px);
+            font-weight: 600;
             letter-spacing: -0.02em;
-            margin-bottom: 12px;
+            margin-bottom: 8px;
             color: var(--text-primary);
         }
         .hero p {
-            font-size: clamp(1.2em, 2.5vw, 1.5em);
+            font-size: clamp(15px, 2.5vw, 19px);
             color: var(--text-secondary);
             font-weight: 400;
-            max-width: 600px;
+            max-width: 520px;
             margin: 0 auto;
         }
         
-        /* Content Sections */
+        /* Content */
         .section {
-            max-width: 980px;
+            max-width: 1080px;
             margin: 0 auto;
-            padding: 60px 20px;
+            padding: 56px 24px;
+        }
+        .section-header {
+            margin-bottom: 32px;
         }
         .section-title {
-            font-size: 2em;
-            font-weight: 700;
-            margin-bottom: 40px;
-            text-align: center;
+            font-size: 24px;
+            font-weight: 600;
             letter-spacing: -0.01em;
+            color: var(--text-primary);
+        }
+        .section-subtitle {
+            font-size: 15px;
+            color: var(--text-secondary);
+            margin-top: 4px;
         }
         
         /* Grid */
         .grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
-            gap: 20px;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 16px;
         }
         
         /* Cards */
         .card {
-            background: var(--card-bg);
-            border-radius: 18px;
-            padding: 40px;
+            background: var(--bg-secondary);
+            border-radius: 12px;
+            padding: 28px;
             text-decoration: none;
             color: inherit;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            box-shadow: 0 4px 6px rgba(0,0,0,0.04);
-            position: relative;
-            overflow: hidden;
+            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+            border: 1px solid var(--border);
             display: flex;
             flex-direction: column;
-            min-height: 280px;
+            min-height: 220px;
+            position: relative;
         }
         .card:hover {
-            transform: scale(1.02);
-            box-shadow: 0 12px 24px rgba(0,0,0,0.08);
+            border-color: rgba(0, 0, 0, 0.15);
+            box-shadow: var(--shadow-hover);
+            transform: translateY(-2px);
         }
         .card-icon {
-            font-size: 3.5em;
-            margin-bottom: 20px;
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            margin-bottom: 16px;
         }
+        .card-icon.blue { background: rgba(10, 132, 255, 0.12); }
+        .card-icon.purple { background: rgba(88, 86, 214, 0.12); }
+        .card-icon.green { background: rgba(52, 199, 89, 0.12); }
+        .card-icon.orange { background: rgba(255, 149, 0, 0.12); }
+        .card-icon.pink { background: rgba(255, 45, 85, 0.12); }
+        .card-icon.gray { background: rgba(142, 142, 147, 0.12); }
+        
         .card-title {
-            font-size: 1.75em;
+            font-size: 17px;
             font-weight: 600;
             color: var(--text-primary);
-            margin-bottom: 10px;
-            letter-spacing: -0.01em;
+            margin-bottom: 6px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
         }
         .card-desc {
-            font-size: 1.05em;
+            font-size: 14px;
             color: var(--text-secondary);
-            line-height: 1.6;
-            margin-bottom: 20px;
+            line-height: 1.5;
             flex-grow: 1;
         }
         .card-tags {
             display: flex;
-            gap: 8px;
+            gap: 6px;
             flex-wrap: wrap;
-            margin-top: auto;
+            margin-top: 16px;
         }
         .tag {
-            background: var(--bg-color);
-            color: var(--text-primary);
-            padding: 6px 14px;
-            border-radius: 20px;
-            font-size: 0.8em;
+            background: var(--bg-primary);
+            color: var(--text-secondary);
+            padding: 4px 10px;
+            border-radius: 6px;
+            font-size: 12px;
             font-weight: 500;
         }
         .status-badge {
             display: inline-block;
-            background: #34c759;
-            color: white;
-            padding: 4px 12px;
-            border-radius: 12px;
-            font-size: 0.75em;
+            background: rgba(52, 199, 89, 0.15);
+            color: #329e5e;
+            padding: 2px 8px;
+            border-radius: 6px;
+            font-size: 11px;
             font-weight: 600;
-            margin-left: 10px;
-            vertical-align: middle;
+            text-transform: uppercase;
+            letter-spacing: 0.02em;
         }
         .status-badge.developing {
-            background: #ff9500;
+            background: rgba(255, 149, 0, 0.15);
+            color: #d97f00;
         }
         .card-arrow {
             position: absolute;
-            bottom: 40px;
-            right: 40px;
-            font-size: 1.5em;
+            bottom: 28px;
+            right: 28px;
+            font-size: 16px;
             color: var(--accent);
             opacity: 0;
-            transform: translateX(-10px);
-            transition: all 0.3s;
+            transform: translateX(-8px);
+            transition: all 0.25s ease;
         }
         .card:hover .card-arrow {
             opacity: 1;
             transform: translateX(0);
         }
-        .card-link {
-            color: var(--accent);
-            font-size: 1.05em;
-            font-weight: 500;
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-            margin-top: 15px;
-        }
-        .card-link:hover {
-            text-decoration: underline;
-        }
         
-        /* Large Feature Card */
+        /* Featured Card */
         .card.featured {
             grid-column: 1 / -1;
-            min-height: 340px;
-            background: linear-gradient(135deg, #1d1d1f 0%, #2d2d2f 100%);
-            color: white;
+            min-height: 260px;
+            background: linear-gradient(135deg, #1c1c1e 0%, #2c2c2e 100%);
+            border: none;
         }
         .card.featured .card-title,
         .card.featured .card-desc {
-            color: white;
+            color: #f5f5f7;
+        }
+        .card.featured .card-icon {
+            background: rgba(255, 255, 255, 0.15);
         }
         .card.featured .tag {
-            background: rgba(255,255,255,0.2);
-            color: white;
+            background: rgba(255, 255, 255, 0.15);
+            color: #f5f5f7;
+        }
+        .card.featured .card-arrow {
+            color: #fff;
         }
         
         /* Footer */
         footer {
-            background: var(--card-bg);
-            border-top: 1px solid rgba(0,0,0,0.1);
-            padding: 40px 20px;
-            margin-top: 60px;
+            background: var(--bg-secondary);
+            border-top: 1px solid var(--border);
+            padding: 40px 24px;
+            margin-top: 40px;
         }
         .footer-content {
-            max-width: 980px;
+            max-width: 1080px;
             margin: 0 auto;
             display: flex;
             justify-content: space-between;
             align-items: center;
             flex-wrap: wrap;
-            gap: 20px;
+            gap: 16px;
         }
         .footer-text {
-            color: var(--text-secondary);
-            font-size: 0.85em;
+            color: var(--text-tertiary);
+            font-size: 12px;
         }
         .footer-links {
             display: flex;
-            gap: 20px;
+            gap: 24px;
         }
         .footer-links a {
             color: var(--text-secondary);
             text-decoration: none;
-            font-size: 0.85em;
+            font-size: 12px;
         }
         .footer-links a:hover {
-            color: var(--accent);
+            color: var(--text-primary);
         }
         
         /* Responsive */
         @media (max-width: 768px) {
             .hero {
-                padding: 60px 20px 40px;
+                padding: 56px 20px 40px;
             }
             .section {
                 padding: 40px 20px;
@@ -265,9 +291,6 @@
             }
             .card.featured {
                 grid-column: 1;
-            }
-            .card {
-                padding: 30px;
             }
             .nav-links {
                 display: none;
@@ -279,92 +302,106 @@
     <!-- Navigation -->
     <nav>
         <div class="nav-content">
-            <a href="/" class="nav-logo"> 阿王的门户</a>
+            <a href="/" class="nav-logo">Dashboard</a>
             <div class="nav-links">
-                <a href="#features">功能</a>
-                <a href="#learning">学习</a>
-                <a href="#tools">工具</a>
+                <a href="#overview">Overview</a>
+                <a href="#learning">Learning</a>
+                <a href="#tools">Tools</a>
             </div>
         </div>
     </nav>
 
     <!-- Hero -->
-    <section class="hero">
-        <div class="hero-emoji">🏠</div>
-        <h1>学习，从未如此简单</h1>
-        <p>一站式学习门户，整合你需要的全部资源</p>
+    <section class="hero" id="overview">
+        <span class="hero-emoji">📌</span>
+        <h1>Personal Hub</h1>
+        <p>Everything you need in one place</p>
     </section>
 
-    <!-- Features Grid -->
-    <section class="section" id="features">
-        <h2 class="section-title">探索功能</h2>
+    <!-- Main Content -->
+    <section class="section" id="learning">
+        <div class="section-header">
+            <h2 class="section-title">Quick Access</h2>
+            <p class="section-subtitle">Your favorite tools and resources</p>
+        </div>
+        
         <div class="grid">
             <!-- Featured Card -->
             <a href="english-audio/" class="card featured">
                 <div class="card-icon">🎧</div>
-                <h3 class="card-title">英语听力 <span class="status-badge">已上线</span></h3>
-                <p class="card-desc">沉浸式英语学习体验，音频播放、同步字幕、自动滚动。边听边学，让进步自然而然。</p>
+                <h3 class="card-title">Audio Learning <span class="status-badge">Live</span></h3>
+                <p class="card-desc">Interactive English learning with synchronized subtitles, auto-scroll, and real-time highlighting.</p>
                 <div class="card-tags">
-                    <span class="tag">英语</span>
-                    <span class="tag">听力</span>
-                    <span class="tag">字幕同步</span>
+                    <span class="tag">English</span>
+                    <span class="tag">Audio</span>
+                    <span class="tag">Subtitles</span>
                 </div>
-                <div class="card-link">开始学习 →</div>
                 <div class="card-arrow">→</div>
             </a>
 
             <!-- Regular Cards -->
             <div class="card">
-                <div class="card-icon">📊</div>
-                <h3 class="card-title">股市行情 <span class="status-badge developing">开发中</span></h3>
-                <p class="card-desc">每日股市行情分析，A 股、黄金、有色金属实时数据与投资建议。</p>
+                <div class="card-icon blue">📈</div>
+                <h3 class="card-title">Market Data <span class="status-badge developing">Beta</span></h3>
+                <p class="card-desc">Real-time market insights, stocks, commodities, and investment analysis.</p>
                 <div class="card-tags">
-                    <span class="tag">股票</span>
-                    <span class="tag">财经</span>
+                    <span class="tag">Finance</span>
+                    <span class="tag">Stocks</span>
                 </div>
                 <div class="card-arrow">→</div>
             </div>
 
             <div class="card">
-                <div class="card-icon">📰</div>
-                <h3 class="card-title">每日新闻 <span class="status-badge developing">开发中</span></h3>
-                <p class="card-desc">全球新闻与 AI 技术动态，每日晨间推送。</p>
+                <div class="card-icon purple">📰</div>
+                <h3 class="card-title">News Feed <span class="status-badge developing">Beta</span></h3>
+                <p class="card-desc">Daily curated news from global sources and AI technology updates.</p>
                 <div class="card-tags">
-                    <span class="tag">新闻</span>
+                    <span class="tag">News</span>
                     <span class="tag">AI</span>
                 </div>
                 <div class="card-arrow">→</div>
             </div>
 
             <div class="card">
-                <div class="card-icon">📚</div>
-                <h3 class="card-title">阅读笔记</h3>
-                <p class="card-desc">读书笔记、文章摘要、知识整理。构建个人知识库。</p>
+                <div class="card-icon green">📚</div>
+                <h3 class="card-title">Reading Notes</h3>
+                <p class="card-desc">Personal knowledge base with book summaries and article highlights.</p>
                 <div class="card-tags">
-                    <span class="tag">阅读</span>
-                    <span class="tag">笔记</span>
+                    <span class="tag">Notes</span>
+                    <span class="tag">Knowledge</span>
                 </div>
                 <div class="card-arrow">→</div>
             </div>
 
             <div class="card">
-                <div class="card-icon">🎬</div>
-                <h3 class="card-title">视频学习</h3>
-                <p class="card-desc">B 站、YouTube 视频字幕下载与总结。</p>
+                <div class="card-icon orange">🎬</div>
+                <h3 class="card-title">Video Library</h3>
+                <p class="card-desc">Video transcripts, summaries, and key takeaways from YouTube and Bilibili.</p>
                 <div class="card-tags">
-                    <span class="tag">视频</span>
-                    <span class="tag">字幕</span>
+                    <span class="tag">Video</span>
+                    <span class="tag">Transcripts</span>
                 </div>
                 <div class="card-arrow">→</div>
             </div>
 
             <div class="card">
-                <div class="card-icon">⚙️</div>
-                <h3 class="card-title">工具集合</h3>
-                <p class="card-desc">常用工具快速访问入口。</p>
+                <div class="card-icon pink">⚡</div>
+                <h3 class="card-title">Quick Tools</h3>
+                <p class="card-desc">Handy utilities for daily productivity and workflow optimization.</p>
                 <div class="card-tags">
-                    <span class="tag">工具</span>
-                    <span class="tag">效率</span>
+                    <span class="tag">Tools</span>
+                    <span class="tag">Productivity</span>
+                </div>
+                <div class="card-arrow">→</div>
+            </div>
+
+            <div class="card">
+                <div class="card-icon gray">⚙️</div>
+                <h3 class="card-title">Settings</h3>
+                <p class="card-desc">Customize your dashboard preferences and integrations.</p>
+                <div class="card-tags">
+                    <span class="tag">Config</span>
+                    <span class="tag">Preferences</span>
                 </div>
                 <div class="card-arrow">→</div>
             </div>
@@ -372,23 +409,23 @@
     </section>
 
     <!-- Footer -->
-    <footer>
+    <footer id="tools">
         <div class="footer-content">
             <div class="footer-text">
-                Copyright © 2026 阿王。All rights reserved.
+                © 2026 Personal Dashboard. All rights reserved.
             </div>
             <div class="footer-links">
-                <a href="#">隐私政策</a>
-                <a href="#">使用条款</a>
-                <a href="https://github.com/qq1800857/github-pages-demo" target="_blank">GitHub</a>
+                <a href="https://github.com/qq1800857/github-pages-demo" target="_blank" rel="noopener">GitHub</a>
+                <a href="#">Privacy</a>
+                <a href="#">Terms</a>
             </div>
         </div>
-        <div class="footer-content" style="margin-top: 20px; padding-top: 20px; border-top: 1px solid rgba(0,0,0,0.1);">
+        <div class="footer-content" style="margin-top: 16px; padding-top: 16px; border-top: 1px solid var(--border);">
             <div class="footer-text">
-                Powered by GitHub Pages
+                Hosted on GitHub Pages
             </div>
             <div class="footer-text">
-                最后更新：2026 年 3 月 11 日
+                Last updated: March 11, 2026
             </div>
         </div>
     </footer>
