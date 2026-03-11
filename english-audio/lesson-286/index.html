@@ -1,0 +1,665 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lesson 4 - Server Log Monitor</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            background-color: #0d1117;
+            color: #c9d1d9;
+            font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
+            font-size: 13px;
+            margin: 0;
+            padding: 20px;
+            line-height: 1.5;
+        }
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #0d1117; }
+        ::-webkit-scrollbar-thumb { background: #30363d; border-radius: 4px; }
+        #header {
+            border-bottom: 1px solid #30363d;
+            padding-bottom: 12px;
+            margin-bottom: 16px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            background: #0d1117;
+            z-index: 100;
+        }
+        .header-left { display: flex; align-items: center; gap: 16px; }
+        .server-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 4px 10px;
+            background: #21262d;
+            border: 1px solid #30363d;
+            border-radius: 6px;
+            font-size: 12px;
+        }
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            background: #3fb950;
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+        }
+        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
+        select {
+            background-color: #21262d;
+            color: #c9d1d9;
+            border: 1px solid #30363d;
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-family: inherit;
+            font-size: 12px;
+            outline: none;
+            cursor: pointer;
+        }
+        #controls-hint {
+            color: #8b949e;
+            font-size: 11px;
+            display: flex;
+            gap: 16px;
+        }
+        .hint-key {
+            background: #21262d;
+            padding: 2px 6px;
+            border-radius: 4px;
+            border: 1px solid #30363d;
+            font-size: 10px;
+        }
+        #log-container {
+            max-height: calc(100vh - 180px);
+            overflow-y: auto;
+            padding-right: 8px;
+        }
+        .log-line {
+            display: grid;
+            grid-template-columns: 180px 80px 1fr;
+            gap: 12px;
+            padding: 3px 8px;
+            cursor: pointer;
+            transition: background-color 0.15s;
+            border-radius: 4px;
+            margin-bottom: 2px;
+        }
+        .log-line:hover { background-color: #1f2428; }
+        .log-line.active {
+            background-color: #2b313c;
+            border-left: 3px solid #58a6ff;
+            padding-left: 5px;
+        }
+        .timestamp { color: #8b949e; font-size: 12px; white-space: nowrap; }
+        .speaker-badge {
+            display: inline-block;
+            padding: 1px 8px;
+            border-radius: 4px;
+            font-size: 11px;
+            font-weight: 600;
+            text-align: center;
+            background: rgba(88, 166, 255, 0.15);
+            color: #58a6ff;
+        }
+        .log-content { color: #c9d1d9; word-break: break-word; line-height: 1.6; }
+        .log-content-cn {
+            color: #484f58;
+            font-size: 12px;
+            margin-top: 3px;
+            display: none;
+        }
+        .log-line.show-cn .log-content-cn { display: block; }
+        #player-bar {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: #161b22;
+            border-top: 1px solid #30363d;
+            padding: 12px 20px;
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+        .player-controls { display: flex; align-items: center; gap: 8px; }
+        .player-btn {
+            background: #21262d;
+            border: 1px solid #30363d;
+            color: #c9d1d9;
+            width: 32px;
+            height: 32px;
+            border-radius: 6px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            transition: all 0.2s;
+        }
+        .player-btn:hover { background: #30363d; border-color: #8b949e; }
+        .play-btn {
+            width: 36px;
+            height: 36px;
+            background: #1f6feb;
+            border-color: #1f6feb;
+            color: #fff;
+        }
+        .play-btn:hover { background: #388bfd; }
+        .progress-container {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .time-display {
+            color: #8b949e;
+            font-size: 11px;
+            font-family: inherit;
+            min-width: 40px;
+        }
+        .progress-bar {
+            flex: 1;
+            height: 4px;
+            background: #30363d;
+            border-radius: 2px;
+            cursor: pointer;
+            position: relative;
+        }
+        .progress-bar:hover { height: 6px; }
+        .progress-fill {
+            height: 100%;
+            background: #1f6feb;
+            border-radius: 2px;
+            width: 0%;
+            transition: width 0.1s linear;
+        }
+        .volume-control { display: flex; align-items: center; gap: 6px; }
+        .volume-slider {
+            width: 80px;
+            height: 4px;
+            background: #30363d;
+            border-radius: 2px;
+            cursor: pointer;
+            -webkit-appearance: none;
+        }
+        .volume-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 12px;
+            height: 12px;
+            background: #8b949e;
+            border-radius: 50%;
+            cursor: pointer;
+        }
+        .toggle-cn {
+            background: none;
+            border: 1px solid #30363d;
+            color: #8b949e;
+            padding: 4px 10px;
+            border-radius: 6px;
+            font-size: 11px;
+            cursor: pointer;
+            margin-left: 8px;
+        }
+        .toggle-cn:hover { border-color: #8b949e; color: #c9d1d9; }
+        .toggle-cn.active { background: #1f6feb; border-color: #1f6feb; color: #fff; }
+        #audio-element { display: none; }
+        .nav-links { display: flex; gap: 8px; margin-left: 16px; }
+        .nav-btn {
+            background: #21262d;
+            border: 1px solid #30363d;
+            color: #c9d1d9;
+            padding: 4px 10px;
+            border-radius: 6px;
+            text-decoration: none;
+            font-size: 11px;
+        }
+        .nav-btn:hover { border-color: #8b949e; }
+    </style>
+</head>
+<body>
+
+<div id="header">
+    <div class="header-left">
+        <div class="server-badge">
+            <div class="status-dot"></div>
+            <strong>prod-cluster-us-east-1</strong>
+        </div>
+        <span style="color: #8b949e;">session logs:</span>
+        <select id="lesson-select" onchange="location.href=this.value">
+            <option value="lesson-283/" >Session-283 (Lesson 1)</option>
+            <option value="lesson-284/" >Session-284 (Lesson 2)</option>
+            <option value="lesson-285/" >Session-285 (Lesson 3)</option>
+            <option value="lesson-286/" selected>Session-286 (Lesson 4)</option>
+            <option value="lesson-287/" >Session-287 (Lesson 5)</option>
+        </select>
+        <div class="nav-links">
+            <a href="../" class="nav-btn">← Index</a>
+            <a href="../english-audio/" class="nav-btn">Dashboard</a>
+        </div>
+    </div>
+    <div id="controls-hint">
+        <span><span class="hint-key">Space</span> Play/Pause</span>
+        <span><span class="hint-key">←</span><span class="hint-key">→</span> Skip 5s</span>
+        <span><span class="hint-key">↑</span><span class="hint-key">↓</span> Navigate</span>
+        <button class="toggle-cn" id="toggleCn" onclick="toggleChinese()">Show Translation</button>
+    </div>
+</div>
+
+<div id="log-container">
+    <div class="log-line" id="log-0" onclick="seekTo(0)">
+        <span class="timestamp">2026-03-11T08:00:00Z</span>
+        <span class="speaker-badge">Harry:</span>
+        <div class="log-content">
+            <div>Excuse me. Can you help me?</div>
+            <div class="log-content-cn">对不起，你能帮我么？</div>
+        </div>
+    </div>
+    <div class="log-line" id="log-1" onclick="seekTo(3)">
+        <span class="timestamp">2026-03-11T08:03:00Z</span>
+        <span class="speaker-badge">Vendor:</span>
+        <div class="log-content">
+            <div>Sure, what do you want?</div>
+            <div class="log-content-cn">可以啊,什么事？</div>
+        </div>
+    </div>
+    <div class="log-line" id="log-2" onclick="seekTo(6)">
+        <span class="timestamp">2026-03-11T08:06:00Z</span>
+        <span class="speaker-badge">Harry:</span>
+        <div class="log-content">
+            <div>Where is 83 Wooster Street?</div>
+            <div class="log-content-cn">Wooster街83号在哪？</div>
+        </div>
+    </div>
+    <div class="log-line" id="log-3" onclick="seekTo(9)">
+        <span class="timestamp">2026-03-11T08:09:00Z</span>
+        <span class="speaker-badge">Vendor:</span>
+        <div class="log-content">
+            <div>That&#x27;s easy. Walk to the corner. Then make a left turn. Then walk two blocks to the traffic light. Make another left to Wooster.</div>
+            <div class="log-content-cn">很好找。你走到拐角，然后向左转，接着走两条街到红绿灯，再向左转就到了Wooster街了。</div>
+        </div>
+    </div>
+    <div class="log-line" id="log-4" onclick="seekTo(12)">
+        <span class="timestamp">2026-03-11T08:12:00Z</span>
+        <span class="speaker-badge">Harry:</span>
+        <div class="log-content">
+            <div>Thank you. To the corner and then a left?</div>
+            <div class="log-content-cn">谢谢你。走到拐角向左转，对吗？</div>
+        </div>
+    </div>
+    <div class="log-line" id="log-5" onclick="seekTo(15)">
+        <span class="timestamp">2026-03-11T08:15:00Z</span>
+        <span class="speaker-badge">Vendor:</span>
+        <div class="log-content">
+            <div>Yeah. A left. Hot dog? Only seventy-five cents.</div>
+            <div class="log-content-cn">是的，向左转。要热狗吗？只要七十五美分。</div>
+        </div>
+    </div>
+    <div class="log-line" id="log-6" onclick="seekTo(18)">
+        <span class="timestamp">2026-03-11T08:18:00Z</span>
+        <span class="speaker-badge">Harry:</span>
+        <div class="log-content">
+            <div>No. Thank you. I have a dinner date.</div>
+            <div class="log-content-cn">不，谢谢。我要去赴晚餐约会。</div>
+        </div>
+    </div>
+    <div class="log-line" id="log-7" onclick="seekTo(21)">
+        <span class="timestamp">2026-03-11T08:21:00Z</span>
+        <span class="speaker-badge">Harry:</span>
+        <div class="log-content">
+            <div>555-9470...and it&#x27;s busy.... Try again. 555-9470...and it&#x27;s still busy.</div>
+            <div class="log-content-cn">555-9470…占线…，再试一次。555-9470……还是忙。</div>
+        </div>
+    </div>
+    <div class="log-line" id="log-8" onclick="seekTo(24)">
+        <span class="timestamp">2026-03-11T08:24:00Z</span>
+        <span class="speaker-badge">Harry:</span>
+        <div class="log-content">
+            <div>Excuse me, ma&#x27;am. I&#x27;m looking for 83 Wooster Street.</div>
+            <div class="log-content-cn">对不起，夫人。我想找Wooster街83号。</div>
+        </div>
+    </div>
+    <div class="log-line" id="log-9" onclick="seekTo(27)">
+        <span class="timestamp">2026-03-11T08:27:00Z</span>
+        <span class="speaker-badge">Woman:</span>
+        <div class="log-content">
+            <div>Yes. Wooster Street is two blocks, and 83 is to the right, about two houses.</div>
+            <div class="log-content-cn">噢，Wooster街是两条街区，83号是在右边，大约过两栋房子就到了。</div>
+        </div>
+    </div>
+    <div class="log-line" id="log-10" onclick="seekTo(30)">
+        <span class="timestamp">2026-03-11T08:30:00Z</span>
+        <span class="speaker-badge">Harry:</span>
+        <div class="log-content">
+            <div>Thank you, thank you!</div>
+            <div class="log-content-cn">谢谢，谢谢！</div>
+        </div>
+    </div>
+    <div class="log-line" id="log-11" onclick="seekTo(33)">
+        <span class="timestamp">2026-03-11T08:33:00Z</span>
+        <span class="speaker-badge">Woman:</span>
+        <div class="log-content">
+            <div>You&#x27;re welcome.</div>
+            <div class="log-content-cn">不用谢。</div>
+        </div>
+    </div>
+    <div class="log-line" id="log-12" onclick="seekTo(36)">
+        <span class="timestamp">2026-03-11T08:36:00Z</span>
+        <span class="speaker-badge">Susan:</span>
+        <div class="log-content">
+            <div>Who is it?</div>
+            <div class="log-content-cn">谁呀？</div>
+        </div>
+    </div>
+    <div class="log-line" id="log-13" onclick="seekTo(39)">
+        <span class="timestamp">2026-03-11T08:39:00Z</span>
+        <span class="speaker-badge">Harry:</span>
+        <div class="log-content">
+            <div>Harry Bennett. Is this Susan?</div>
+            <div class="log-content-cn">Harry Bennett。是Susan吗？</div>
+        </div>
+    </div>
+    <div class="log-line" id="log-14" onclick="seekTo(42)">
+        <span class="timestamp">2026-03-11T08:42:00Z</span>
+        <span class="speaker-badge">Susan:</span>
+        <div class="log-content">
+            <div>Yes, it is. Come up. I&#x27;m on the top floor.</div>
+            <div class="log-content-cn">是的，是我。请上来。我在顶层。</div>
+        </div>
+    </div>
+    <div class="log-line" id="log-15" onclick="seekTo(45)">
+        <span class="timestamp">2026-03-11T08:45:00Z</span>
+        <span class="speaker-badge">Susan:</span>
+        <div class="log-content">
+            <div>Hello, Harry. It&#x27;s nice to meet you.</div>
+            <div class="log-content-cn">你好，Harry。很高兴见到你。</div>
+        </div>
+    </div>
+    <div class="log-line" id="log-16" onclick="seekTo(48)">
+        <span class="timestamp">2026-03-11T08:48:00Z</span>
+        <span class="speaker-badge">Harry:</span>
+        <div class="log-content">
+            <div>Nice to meet you, Susan. Sorry I&#x27;m late. The traffic. The parking. I was lost.</div>
+            <div class="log-content-cn">很高兴见到你，Susan。很抱歉我迟到了。交通拥挤，又找不到停车的地方，而且我又迷路了！</div>
+        </div>
+    </div>
+    <div class="log-line" id="log-17" onclick="seekTo(51)">
+        <span class="timestamp">2026-03-11T08:51:00Z</span>
+        <span class="speaker-badge">Susan:</span>
+        <div class="log-content">
+            <div>What pretty flowers! Thank you. Oh, please come in. Don&#x27;t worry about being late. It&#x27;s fine.</div>
+            <div class="log-content-cn">好漂亮的花!谢谢你。噢，请进来。别为迟到担心了，没有关系的。</div>
+        </div>
+    </div>
+    <div class="log-line" id="log-18" onclick="seekTo(54)">
+        <span class="timestamp">2026-03-11T08:54:00Z</span>
+        <span class="speaker-badge">Susan:</span>
+        <div class="log-content">
+            <div>Excuse the mess. I just moved here. Oh, I&#x27;d like you to meet my sister-in-law Marilyn. Marilyn Stewart, this is Harry Bennett.</div>
+            <div class="log-content-cn">请不要介意这儿乱得很，我刚刚搬来住。噢，我来向你介绍我嫂子Marilyn。Marilyn Stewart，这是Harry Bennett。</div>
+        </div>
+    </div>
+    <div class="log-line" id="log-19" onclick="seekTo(57)">
+        <span class="timestamp">2026-03-11T08:57:00Z</span>
+        <span class="speaker-badge">Harry:</span>
+        <div class="log-content">
+            <div>Pleased to meet you.</div>
+            <div class="log-content-cn">很高兴见到你。</div>
+        </div>
+    </div>
+    <div class="log-line" id="log-20" onclick="seekTo(60)">
+        <span class="timestamp">2026-03-11T09:00:00Z</span>
+        <span class="speaker-badge">Marilyn:</span>
+        <div class="log-content">
+            <div>Nice to meet you, Harry.</div>
+            <div class="log-content-cn">我也很高兴见到你，Harry。</div>
+        </div>
+    </div>
+    <div class="log-line" id="log-21" onclick="seekTo(63)">
+        <span class="timestamp">2026-03-11T09:03:00Z</span>
+        <span class="speaker-badge">Harry:</span>
+        <div class="log-content">
+            <div>Are we too late for our dinner reservation?</div>
+            <div class="log-content-cn">我们会不会错过晚餐订位的时间？</div>
+        </div>
+    </div>
+    <div class="log-line" id="log-22" onclick="seekTo(66)">
+        <span class="timestamp">2026-03-11T09:06:00Z</span>
+        <span class="speaker-badge">Susan:</span>
+        <div class="log-content">
+            <div>No, the restaurant will hold our table. I know the owner very well. I eat there a lot.</div>
+            <div class="log-content-cn">不会，餐厅会保留我们的席位。我和老板很熟。我在那儿吃过好多次。</div>
+        </div>
+    </div>
+    <div class="log-line" id="log-23" onclick="seekTo(69)">
+        <span class="timestamp">2026-03-11T09:09:00Z</span>
+        <span class="speaker-badge">Harry:</span>
+        <div class="log-content">
+            <div>Do you know the phone number of the restaurant? I&#x27;d like to call home and leave the number with the baby-sitter.</div>
+            <div class="log-content-cn">知道那家餐厅的电话号码么？我想打电话回家把餐厅的电话告诉临时保姆。</div>
+        </div>
+    </div>
+    <div class="log-line" id="log-24" onclick="seekTo(72)">
+        <span class="timestamp">2026-03-11T09:12:00Z</span>
+        <span class="speaker-badge">Susan:</span>
+        <div class="log-content">
+            <div>Sure. The number is... five five five...seventeen twenty.</div>
+            <div class="log-content-cn">没问题，号码是555--1720。</div>
+        </div>
+    </div>
+    <div class="log-line" id="log-25" onclick="seekTo(75)">
+        <span class="timestamp">2026-03-11T09:15:00Z</span>
+        <span class="speaker-badge">Harry:</span>
+        <div class="log-content">
+            <div>May I use the phone? Five five five...one seven two oh. Hello? Hi, Michelle. It&#x27;s Daddy. Can I speak to Betty? I want to leave the phone number of the restaurant...</div>
+            <div class="log-content-cn">我可以用一下电话吗？555-1720 ， 喂?嗨，Michelle。是爸爸。我能跟Betty说话吗? 我要留餐厅的电话号码给她...</div>
+        </div>
+    </div>
+    <div class="log-line" id="log-26" onclick="seekTo(78)">
+        <span class="timestamp">2026-03-11T09:18:00Z</span>
+        <span class="speaker-badge">Harry:</span>
+        <div class="log-content">
+            <div>Hi, Betty. I&#x27;ll be at five five five...seventeen twenty. OK. Thanks. See you later.</div>
+            <div class="log-content-cn">好，Betty。我的电话号码是555-1720。好，谢谢。再见。</div>
+        </div>
+    </div>
+    <div class="log-line" id="log-27" onclick="seekTo(81)">
+        <span class="timestamp">2026-03-11T09:21:00Z</span>
+        <span class="speaker-badge">Harry:</span>
+        <div class="log-content">
+            <div>Well, that&#x27;s done. Shall we go?</div>
+            <div class="log-content-cn">好了，打完了。我们可以走了吗？</div>
+        </div>
+    </div>
+    <div class="log-line" id="log-28" onclick="seekTo(84)">
+        <span class="timestamp">2026-03-11T09:24:00Z</span>
+        <span class="speaker-badge">Susan:</span>
+        <div class="log-content">
+            <div>I&#x27;m ready. See you later, Marilyn.</div>
+            <div class="log-content-cn">我准备好了。Marilyn，再见。</div>
+        </div>
+    </div>
+    <div class="log-line" id="log-29" onclick="seekTo(87)">
+        <span class="timestamp">2026-03-11T09:27:00Z</span>
+        <span class="speaker-badge">Marilyn:</span>
+        <div class="log-content">
+            <div>Have a nice evening.</div>
+            <div class="log-content-cn">祝你们今晚愉快。</div>
+        </div>
+    </div>
+    <div class="log-line" id="log-30" onclick="seekTo(90)">
+        <span class="timestamp">2026-03-11T09:30:00Z</span>
+        <span class="speaker-badge">Harry:</span>
+        <div class="log-content">
+            <div>Bye, Marilyn. Hope to see you again.</div>
+            <div class="log-content-cn">再见，Marilyn。希望能再次见面。</div>
+        </div>
+    </div>
+    <div class="log-line" id="log-31" onclick="seekTo(93)">
+        <span class="timestamp">2026-03-11T09:33:00Z</span>
+        <span class="speaker-badge">Marilyn:</span>
+        <div class="log-content">
+            <div>Me, too. Have fun!</div>
+            <div class="log-content-cn">我也是。祝你们玩得愉快！</div>
+        </div>
+    </div>
+    <div class="log-line" id="log-32" onclick="seekTo(96)">
+        <span class="timestamp">2026-03-11T09:36:00Z</span>
+        <span class="speaker-badge">Susan:</span>
+        <div class="log-content">
+            <div>Thanks.</div>
+            <div class="log-content-cn">谢谢。</div>
+        </div>
+    </div>
+    <div class="log-line" id="log-33" onclick="seekTo(99)">
+        <span class="timestamp">2026-03-11T09:39:00Z</span>
+        <span class="speaker-badge">Harry:</span>
+        <div class="log-content">
+            <div>After you.</div>
+            <div class="log-content-cn">请先走。</div>
+        </div>
+    </div>
+</div>
+
+<div id="player-bar">
+    <div class="player-controls">
+        <button class="player-btn" onclick="skip(-10)" title="Rewind 10s">⏪</button>
+        <button class="player-btn play-btn" id="playBtn" onclick="togglePlay()" title="Play/Pause">▶</button>
+        <button class="player-btn" onclick="skip(10)" title="Forward 10s">⏩</button>
+    </div>
+    <div class="progress-container">
+        <span class="time-display" id="current-time">00:00</span>
+        <div class="progress-bar" onclick="seek(event)">
+            <div class="progress-fill" id="progress-fill"></div>
+        </div>
+        <span class="time-display" id="duration">00:00</span>
+    </div>
+    <div class="volume-control">
+        <span style="color: #8b949e; font-size: 14px;">🔊</span>
+        <input type="range" class="volume-slider" min="0" max="100" value="80" oninput="setVolume(this.value)">
+    </div>
+</div>
+
+<audio id="audio-element" preload="metadata">
+    <source src="audio.mp3" type="audio/mpeg">
+</audio>
+
+<script>
+const subtitles = [{"id": 1, "speaker": "Harry:", "en": "Excuse me. Can you help me?", "cn": "对不起，你能帮我么？"}, {"id": 2, "speaker": "Vendor:", "en": "Sure, what do you want?", "cn": "可以啊,什么事？"}, {"id": 3, "speaker": "Harry:", "en": "Where is 83 Wooster Street?", "cn": "Wooster街83号在哪？"}, {"id": 4, "speaker": "Vendor:", "en": "That's easy. Walk to the corner. Then make a left turn. Then walk two blocks to the traffic light. Make another left to Wooster.", "cn": "很好找。你走到拐角，然后向左转，接着走两条街到红绿灯，再向左转就到了Wooster街了。"}, {"id": 5, "speaker": "Harry:", "en": "Thank you. To the corner and then a left?", "cn": "谢谢你。走到拐角向左转，对吗？"}, {"id": 6, "speaker": "Vendor:", "en": "Yeah. A left. Hot dog? Only seventy-five cents.", "cn": "是的，向左转。要热狗吗？只要七十五美分。"}, {"id": 7, "speaker": "Harry:", "en": "No. Thank you. I have a dinner date.", "cn": "不，谢谢。我要去赴晚餐约会。"}, {"id": 8, "speaker": "Harry:", "en": "555-9470...and it's busy.... Try again. 555-9470...and it's still busy.", "cn": "555-9470…占线…，再试一次。555-9470……还是忙。"}, {"id": 9, "speaker": "Harry:", "en": "Excuse me, ma'am. I'm looking for 83 Wooster Street.", "cn": "对不起，夫人。我想找Wooster街83号。"}, {"id": 10, "speaker": "Woman:", "en": "Yes. Wooster Street is two blocks, and 83 is to the right, about two houses.", "cn": "噢，Wooster街是两条街区，83号是在右边，大约过两栋房子就到了。"}, {"id": 11, "speaker": "Harry:", "en": "Thank you, thank you!", "cn": "谢谢，谢谢！"}, {"id": 12, "speaker": "Woman:", "en": "You're welcome.", "cn": "不用谢。"}, {"id": 13, "speaker": "Susan:", "en": "Who is it?", "cn": "谁呀？"}, {"id": 14, "speaker": "Harry:", "en": "Harry Bennett. Is this Susan?", "cn": "Harry Bennett。是Susan吗？"}, {"id": 15, "speaker": "Susan:", "en": "Yes, it is. Come up. I'm on the top floor.", "cn": "是的，是我。请上来。我在顶层。"}, {"id": 16, "speaker": "Susan:", "en": "Hello, Harry. It's nice to meet you.", "cn": "你好，Harry。很高兴见到你。"}, {"id": 17, "speaker": "Harry:", "en": "Nice to meet you, Susan. Sorry I'm late. The traffic. The parking. I was lost.", "cn": "很高兴见到你，Susan。很抱歉我迟到了。交通拥挤，又找不到停车的地方，而且我又迷路了！"}, {"id": 18, "speaker": "Susan:", "en": "What pretty flowers! Thank you. Oh, please come in. Don't worry about being late. It's fine.", "cn": "好漂亮的花!谢谢你。噢，请进来。别为迟到担心了，没有关系的。"}, {"id": 19, "speaker": "Susan:", "en": "Excuse the mess. I just moved here. Oh, I'd like you to meet my sister-in-law Marilyn. Marilyn Stewart, this is Harry Bennett.", "cn": "请不要介意这儿乱得很，我刚刚搬来住。噢，我来向你介绍我嫂子Marilyn。Marilyn Stewart，这是Harry Bennett。"}, {"id": 20, "speaker": "Harry:", "en": "Pleased to meet you.", "cn": "很高兴见到你。"}, {"id": 21, "speaker": "Marilyn:", "en": "Nice to meet you, Harry.", "cn": "我也很高兴见到你，Harry。"}, {"id": 22, "speaker": "Harry:", "en": "Are we too late for our dinner reservation?", "cn": "我们会不会错过晚餐订位的时间？"}, {"id": 23, "speaker": "Susan:", "en": "No, the restaurant will hold our table. I know the owner very well. I eat there a lot.", "cn": "不会，餐厅会保留我们的席位。我和老板很熟。我在那儿吃过好多次。"}, {"id": 24, "speaker": "Harry:", "en": "Do you know the phone number of the restaurant? I'd like to call home and leave the number with the baby-sitter.", "cn": "知道那家餐厅的电话号码么？我想打电话回家把餐厅的电话告诉临时保姆。"}, {"id": 25, "speaker": "Susan:", "en": "Sure. The number is... five five five...seventeen twenty.", "cn": "没问题，号码是555--1720。"}, {"id": 26, "speaker": "Harry:", "en": "May I use the phone? Five five five...one seven two oh. Hello? Hi, Michelle. It's Daddy. Can I speak to Betty? I want to leave the phone number of the restaurant...", "cn": "我可以用一下电话吗？555-1720 ， 喂?嗨，Michelle。是爸爸。我能跟Betty说话吗? 我要留餐厅的电话号码给她..."}, {"id": 27, "speaker": "Harry:", "en": "Hi, Betty. I'll be at five five five...seventeen twenty. OK. Thanks. See you later.", "cn": "好，Betty。我的电话号码是555-1720。好，谢谢。再见。"}, {"id": 28, "speaker": "Harry:", "en": "Well, that's done. Shall we go?", "cn": "好了，打完了。我们可以走了吗？"}, {"id": 29, "speaker": "Susan:", "en": "I'm ready. See you later, Marilyn.", "cn": "我准备好了。Marilyn，再见。"}, {"id": 30, "speaker": "Marilyn:", "en": "Have a nice evening.", "cn": "祝你们今晚愉快。"}, {"id": 31, "speaker": "Harry:", "en": "Bye, Marilyn. Hope to see you again.", "cn": "再见，Marilyn。希望能再次见面。"}, {"id": 32, "speaker": "Marilyn:", "en": "Me, too. Have fun!", "cn": "我也是。祝你们玩得愉快！"}, {"id": 33, "speaker": "Susan:", "en": "Thanks.", "cn": "谢谢。"}, {"id": 34, "speaker": "Harry:", "en": "After you.", "cn": "请先走。"}];
+let currentIndex = -1;
+let isPlaying = false;
+let showChinese = false;
+let activeRow = null;
+
+const audio = document.getElementById('audio-element');
+const playBtn = document.getElementById('playBtn');
+const progressFill = document.getElementById('progress-fill');
+const currentTimeEl = document.getElementById('current-time');
+const durationEl = document.getElementById('duration');
+const logContainer = document.getElementById('log-container');
+
+function init() {
+    renderLogs();
+    audio.addEventListener('loadedmetadata', () => {
+        durationEl.textContent = formatTime(audio.duration);
+    });
+    audio.addEventListener('timeupdate', updateProgress);
+    audio.addEventListener('ended', () => {
+        isPlaying = false;
+        playBtn.textContent = '▶';
+    });
+    document.addEventListener('keydown', handleKeydown);
+}
+
+function renderLogs() {
+    // Logs already rendered in HTML
+}
+
+function updateProgress() {
+    const current = audio.currentTime;
+    const duration = audio.duration;
+    if (duration) {
+        const percent = (current / duration) * 100;
+        progressFill.style.width = percent + '%';
+        currentTimeEl.textContent = formatTime(current);
+        updateActiveLine(current);
+    }
+}
+
+function updateActiveLine(time) {
+    let newIndex = Math.floor(time / 3);
+    if (newIndex >= subtitles.length) newIndex = subtitles.length - 1;
+    if (newIndex !== currentIndex) {
+        if (activeRow) activeRow.classList.remove('active');
+        activeRow = document.getElementById(`log-${newIndex}`);
+        if (activeRow) {
+            activeRow.classList.add('active');
+            activeRow.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+        currentIndex = newIndex;
+    }
+}
+
+function formatTime(seconds) {
+    const mins = Math.floor(seconds / 60);
+    const secs = Math.floor(seconds % 60);
+    return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+}
+
+function togglePlay() {
+    if (isPlaying) {
+        audio.pause();
+        playBtn.textContent = '▶';
+    } else {
+        audio.play();
+        playBtn.textContent = '⏸';
+    }
+    isPlaying = !isPlaying;
+}
+
+function skip(seconds) {
+    audio.currentTime = Math.max(0, Math.min(audio.duration, audio.currentTime + seconds));
+}
+
+function seek(event) {
+    const rect = event.target.getBoundingClientRect();
+    const percent = (event.clientX - rect.left) / rect.width;
+    audio.currentTime = percent * audio.duration;
+}
+
+function seekTo(time) {
+    audio.currentTime = time;
+    if (!isPlaying) togglePlay();
+}
+
+function setVolume(value) {
+    audio.volume = value / 100;
+}
+
+function toggleChinese() {
+    showChinese = !showChinese;
+    document.getElementById('toggleCn').classList.toggle('active', showChinese);
+    document.getElementById('toggleCn').textContent = showChinese ? 'Hide Translation' : 'Show Translation';
+    if (showChinese) logContainer.classList.add('show-cn');
+    else logContainer.classList.remove('show-cn');
+}
+
+function handleKeydown(e) {
+    if (e.target.tagName === 'INPUT' || e.target.tagName === 'SELECT') return;
+    switch(e.code) {
+        case 'Space': e.preventDefault(); togglePlay(); break;
+        case 'ArrowLeft': skip(-5); break;
+        case 'ArrowRight': skip(5); break;
+        case 'ArrowUp': if (currentIndex > 0) seekTo(subtitles[currentIndex - 1].time || (currentIndex - 1) * 3); break;
+        case 'ArrowDown': if (currentIndex < subtitles.length - 1) seekTo(subtitles[currentIndex + 1].time || (currentIndex + 1) * 3); break;
+    }
+}
+
+init();
+</script>
+
+</body>
+</html>
