@@ -10,168 +10,314 @@
             padding: 0;
             box-sizing: border-box;
         }
+        :root {
+            --bg-color: #f5f5f7;
+            --card-bg: #ffffff;
+            --text-primary: #1d1d1f;
+            --text-secondary: #86868b;
+            --accent: #0071e3;
+            --accent-hover: #0077ed;
+        }
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
-            min-height: 100vh;
-            padding: 20px;
+            font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', 'Helvetica Neue', Arial, sans-serif;
+            background: var(--bg-color);
+            color: var(--text-primary);
+            line-height: 1.5;
+            -webkit-font-smoothing: antialiased;
         }
-        .container {
-            max-width: 1200px;
+        
+        /* Navigation */
+        nav {
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: saturate(180%) blur(20px);
+            -webkit-backdrop-filter: saturate(180%) blur(20px);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            border-bottom: 1px solid rgba(0,0,0,0.1);
+        }
+        .nav-content {
+            max-width: 980px;
             margin: 0 auto;
-        }
-        header {
-            text-align: center;
-            padding: 40px 20px;
-            color: white;
-        }
-        header h1 {
-            font-size: 2.5em;
-            margin-bottom: 10px;
-            text-shadow: 0 2px 10px rgba(0,0,0,0.3);
-        }
-        header p {
-            font-size: 1.2em;
-            opacity: 0.8;
-        }
-        .avatar {
-            width: 100px;
-            height: 100px;
-            border-radius: 50%;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 0 20px;
+            height: 48px;
             display: flex;
             align-items: center;
-            justify-content: center;
-            margin: 0 auto 20px;
-            font-size: 3em;
-            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.4);
+            justify-content: space-between;
         }
-        .portal-grid {
+        .nav-logo {
+            font-size: 1.3em;
+            font-weight: 600;
+            color: var(--text-primary);
+            text-decoration: none;
+        }
+        .nav-links {
+            display: flex;
+            gap: 24px;
+        }
+        .nav-links a {
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-size: 0.85em;
+            transition: color 0.2s;
+        }
+        .nav-links a:hover {
+            color: var(--accent);
+        }
+        
+        /* Hero Section */
+        .hero {
+            background: var(--card-bg);
+            padding: 80px 20px 60px;
+            text-align: center;
+        }
+        .hero-emoji {
+            font-size: 4em;
+            margin-bottom: 20px;
+        }
+        .hero h1 {
+            font-size: clamp(2.5em, 5vw, 3.5em);
+            font-weight: 700;
+            letter-spacing: -0.02em;
+            margin-bottom: 12px;
+            color: var(--text-primary);
+        }
+        .hero p {
+            font-size: clamp(1.2em, 2.5vw, 1.5em);
+            color: var(--text-secondary);
+            font-weight: 400;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        
+        /* Content Sections */
+        .section {
+            max-width: 980px;
+            margin: 0 auto;
+            padding: 60px 20px;
+        }
+        .section-title {
+            font-size: 2em;
+            font-weight: 700;
+            margin-bottom: 40px;
+            text-align: center;
+            letter-spacing: -0.01em;
+        }
+        
+        /* Grid */
+        .grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 25px;
-            padding: 20px;
+            grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+            gap: 20px;
         }
+        
+        /* Cards */
         .card {
-            background: rgba(255, 255, 255, 0.95);
-            border-radius: 20px;
-            padding: 30px;
+            background: var(--card-bg);
+            border-radius: 18px;
+            padding: 40px;
             text-decoration: none;
             color: inherit;
-            transition: all 0.3s ease;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 4px 6px rgba(0,0,0,0.04);
             position: relative;
             overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            min-height: 280px;
         }
         .card:hover {
-            transform: translateY(-10px);
-            box-shadow: 0 20px 50px rgba(0,0,0,0.3);
-        }
-        .card::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            height: 5px;
-            background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+            transform: scale(1.02);
+            box-shadow: 0 12px 24px rgba(0,0,0,0.08);
         }
         .card-icon {
-            font-size: 3em;
-            margin-bottom: 15px;
+            font-size: 3.5em;
+            margin-bottom: 20px;
         }
         .card-title {
-            font-size: 1.5em;
-            color: #333;
+            font-size: 1.75em;
+            font-weight: 600;
+            color: var(--text-primary);
             margin-bottom: 10px;
-            font-weight: bold;
+            letter-spacing: -0.01em;
         }
         .card-desc {
-            color: #666;
+            font-size: 1.05em;
+            color: var(--text-secondary);
             line-height: 1.6;
-            margin-bottom: 15px;
+            margin-bottom: 20px;
+            flex-grow: 1;
         }
         .card-tags {
             display: flex;
             gap: 8px;
             flex-wrap: wrap;
+            margin-top: auto;
         }
         .tag {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            padding: 5px 12px;
-            border-radius: 15px;
+            background: var(--bg-color);
+            color: var(--text-primary);
+            padding: 6px 14px;
+            border-radius: 20px;
             font-size: 0.8em;
-        }
-        .card-arrow {
-            position: absolute;
-            bottom: 20px;
-            right: 20px;
-            font-size: 1.5em;
-            color: #667eea;
-            transition: transform 0.3s;
-        }
-        .card:hover .card-arrow {
-            transform: translateX(5px);
+            font-weight: 500;
         }
         .status-badge {
             display: inline-block;
-            background: #48bb78;
+            background: #34c759;
             color: white;
-            padding: 3px 10px;
-            border-radius: 10px;
+            padding: 4px 12px;
+            border-radius: 12px;
             font-size: 0.75em;
+            font-weight: 600;
             margin-left: 10px;
+            vertical-align: middle;
         }
-        .coming-soon {
-            opacity: 0.6;
-            cursor: not-allowed;
+        .status-badge.developing {
+            background: #ff9500;
         }
-        .coming-soon:hover {
-            transform: none;
+        .card-arrow {
+            position: absolute;
+            bottom: 40px;
+            right: 40px;
+            font-size: 1.5em;
+            color: var(--accent);
+            opacity: 0;
+            transform: translateX(-10px);
+            transition: all 0.3s;
         }
+        .card:hover .card-arrow {
+            opacity: 1;
+            transform: translateX(0);
+        }
+        .card-link {
+            color: var(--accent);
+            font-size: 1.05em;
+            font-weight: 500;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            margin-top: 15px;
+        }
+        .card-link:hover {
+            text-decoration: underline;
+        }
+        
+        /* Large Feature Card */
+        .card.featured {
+            grid-column: 1 / -1;
+            min-height: 340px;
+            background: linear-gradient(135deg, #1d1d1f 0%, #2d2d2f 100%);
+            color: white;
+        }
+        .card.featured .card-title,
+        .card.featured .card-desc {
+            color: white;
+        }
+        .card.featured .tag {
+            background: rgba(255,255,255,0.2);
+            color: white;
+        }
+        
+        /* Footer */
         footer {
-            text-align: center;
-            color: rgba(255,255,255,0.6);
+            background: var(--card-bg);
+            border-top: 1px solid rgba(0,0,0,0.1);
             padding: 40px 20px;
-            margin-top: 40px;
+            margin-top: 60px;
         }
-        .last-update {
-            background: rgba(255,255,255,0.1);
-            border-radius: 10px;
-            padding: 15px 30px;
-            display: inline-block;
-            margin-top: 10px;
+        .footer-content {
+            max-width: 980px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+        .footer-text {
+            color: var(--text-secondary);
+            font-size: 0.85em;
+        }
+        .footer-links {
+            display: flex;
+            gap: 20px;
+        }
+        .footer-links a {
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-size: 0.85em;
+        }
+        .footer-links a:hover {
+            color: var(--accent);
+        }
+        
+        /* Responsive */
+        @media (max-width: 768px) {
+            .hero {
+                padding: 60px 20px 40px;
+            }
+            .section {
+                padding: 40px 20px;
+            }
+            .grid {
+                grid-template-columns: 1fr;
+            }
+            .card.featured {
+                grid-column: 1;
+            }
+            .card {
+                padding: 30px;
+            }
+            .nav-links {
+                display: none;
+            }
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <header>
-            <div class="avatar">🏠</div>
-            <h1>阿王的学习门户</h1>
-            <p>Personal Learning Portal</p>
-        </header>
+    <!-- Navigation -->
+    <nav>
+        <div class="nav-content">
+            <a href="/" class="nav-logo"> 阿王的门户</a>
+            <div class="nav-links">
+                <a href="#features">功能</a>
+                <a href="#learning">学习</a>
+                <a href="#tools">工具</a>
+            </div>
+        </div>
+    </nav>
 
-        <div class="portal-grid">
-            <!-- English Audio -->
-            <a href="english-audio/" class="card">
+    <!-- Hero -->
+    <section class="hero">
+        <div class="hero-emoji">🏠</div>
+        <h1>学习，从未如此简单</h1>
+        <p>一站式学习门户，整合你需要的全部资源</p>
+    </section>
+
+    <!-- Features Grid -->
+    <section class="section" id="features">
+        <h2 class="section-title">探索功能</h2>
+        <div class="grid">
+            <!-- Featured Card -->
+            <a href="english-audio/" class="card featured">
                 <div class="card-icon">🎧</div>
-                <h2 class="card-title">英语听力 <span class="status-badge">已上线</span></h2>
-                <p class="card-desc">英语学习资源，包含音频播放、同步字幕、自动滚动等功能。边听边学，提升听力水平。</p>
+                <h3 class="card-title">英语听力 <span class="status-badge">已上线</span></h3>
+                <p class="card-desc">沉浸式英语学习体验，音频播放、同步字幕、自动滚动。边听边学，让进步自然而然。</p>
                 <div class="card-tags">
                     <span class="tag">英语</span>
                     <span class="tag">听力</span>
-                    <span class="tag">字幕</span>
+                    <span class="tag">字幕同步</span>
                 </div>
+                <div class="card-link">开始学习 →</div>
                 <div class="card-arrow">→</div>
             </a>
 
-            <!-- Coming Soon Cards -->
-            <div class="card coming-soon">
+            <!-- Regular Cards -->
+            <div class="card">
                 <div class="card-icon">📊</div>
-                <h2 class="card-title">股市行情 <span class="status-badge" style="background:#ed8936">开发中</span></h2>
-                <p class="card-desc">每日股市行情分析，包含 A 股、黄金、有色金属等板块的实时数据和投资建议。</p>
+                <h3 class="card-title">股市行情 <span class="status-badge developing">开发中</span></h3>
+                <p class="card-desc">每日股市行情分析，A 股、黄金、有色金属实时数据与投资建议。</p>
                 <div class="card-tags">
                     <span class="tag">股票</span>
                     <span class="tag">财经</span>
@@ -179,10 +325,10 @@
                 <div class="card-arrow">→</div>
             </div>
 
-            <div class="card coming-soon">
+            <div class="card">
                 <div class="card-icon">📰</div>
-                <h2 class="card-title">每日新闻 <span class="status-badge" style="background:#ed8936">开发中</span></h2>
-                <p class="card-desc">全球新闻与 AI 技术动态，每日晨间推送，让你不错过任何重要信息。</p>
+                <h3 class="card-title">每日新闻 <span class="status-badge developing">开发中</span></h3>
+                <p class="card-desc">全球新闻与 AI 技术动态，每日晨间推送。</p>
                 <div class="card-tags">
                     <span class="tag">新闻</span>
                     <span class="tag">AI</span>
@@ -190,10 +336,10 @@
                 <div class="card-arrow">→</div>
             </div>
 
-            <div class="card coming-soon">
+            <div class="card">
                 <div class="card-icon">📚</div>
-                <h2 class="card-title">阅读笔记</h2>
-                <p class="card-desc">读书笔记、文章摘要、知识整理。构建个人知识库，让学习更高效。</p>
+                <h3 class="card-title">阅读笔记</h3>
+                <p class="card-desc">读书笔记、文章摘要、知识整理。构建个人知识库。</p>
                 <div class="card-tags">
                     <span class="tag">阅读</span>
                     <span class="tag">笔记</span>
@@ -201,10 +347,10 @@
                 <div class="card-arrow">→</div>
             </div>
 
-            <div class="card coming-soon">
+            <div class="card">
                 <div class="card-icon">🎬</div>
-                <h2 class="card-title">视频学习</h2>
-                <p class="card-desc">B 站、YouTube 视频字幕下载与总结。提取核心要点，快速掌握视频内容。</p>
+                <h3 class="card-title">视频学习</h3>
+                <p class="card-desc">B 站、YouTube 视频字幕下载与总结。</p>
                 <div class="card-tags">
                     <span class="tag">视频</span>
                     <span class="tag">字幕</span>
@@ -212,10 +358,10 @@
                 <div class="card-arrow">→</div>
             </div>
 
-            <div class="card coming-soon">
+            <div class="card">
                 <div class="card-icon">⚙️</div>
-                <h2 class="card-title">工具集合</h2>
-                <p class="card-desc">常用工具快速访问入口，提升工作效率。</p>
+                <h3 class="card-title">工具集合</h3>
+                <p class="card-desc">常用工具快速访问入口。</p>
                 <div class="card-tags">
                     <span class="tag">工具</span>
                     <span class="tag">效率</span>
@@ -223,15 +369,28 @@
                 <div class="card-arrow">→</div>
             </div>
         </div>
+    </section>
 
-        <footer>
-            <div class="last-update">
-                📅 最后更新：2026 年 3 月 11 日
+    <!-- Footer -->
+    <footer>
+        <div class="footer-content">
+            <div class="footer-text">
+                Copyright © 2026 阿王。All rights reserved.
             </div>
-            <p style="margin-top: 20px; font-size: 0.9em;">
-                Powered by GitHub Pages • Hosted on GitHub
-            </p>
-        </footer>
-    </div>
+            <div class="footer-links">
+                <a href="#">隐私政策</a>
+                <a href="#">使用条款</a>
+                <a href="https://github.com/qq1800857/github-pages-demo" target="_blank">GitHub</a>
+            </div>
+        </div>
+        <div class="footer-content" style="margin-top: 20px; padding-top: 20px; border-top: 1px solid rgba(0,0,0,0.1);">
+            <div class="footer-text">
+                Powered by GitHub Pages
+            </div>
+            <div class="footer-text">
+                最后更新：2026 年 3 月 11 日
+            </div>
+        </div>
+    </footer>
 </body>
 </html>
