@@ -1,631 +1,551 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Analytics Dashboard</title>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-        :root {
-            --bg: #0d1117;
-            --card-bg: #161b22;
-            --border: #30363d;
-            --text-primary: #c9d1d9;
-            --text-secondary: #8b949e;
-            --accent: #58a6ff;
-            --success: #3fb950;
-            --warning: #d29922;
-        }
-        body {
-            font-family: 'SF Mono', 'Monaco', 'Consolas', monospace;
-            background: var(--bg);
-            color: var(--text-primary);
-            line-height: 1.5;
-            font-size: 13px;
-        }
-        
-        /* Header */
-        header {
-            background: var(--card-bg);
-            border-bottom: 1px solid var(--border);
-            padding: 12px 24px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        .header-left {
-            display: flex;
-            align-items: center;
-            gap: 16px;
-        }
-        .logo {
-            font-weight: 600;
-            color: var(--text-primary);
-        }
-        .breadcrumb {
-            color: var(--text-secondary);
-            font-size: 12px;
-        }
-        .breadcrumb span {
-            color: var(--accent);
-        }
-        .status {
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            font-size: 12px;
-            color: var(--success);
-        }
-        .status-dot {
-            width: 8px;
-            height: 8px;
-            background: var(--success);
-            border-radius: 50%;
-            animation: pulse 2s infinite;
-        }
-        @keyframes pulse {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.5; }
-        }
-        
-        /* Main */
-        .container {
-            max-width: 1400px;
-            margin: 0 auto;
-            padding: 24px;
-        }
-        
-        /* Stats Grid */
-        .stats-grid {
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 16px;
-            margin-bottom: 24px;
-        }
-        .stat-card {
-            background: var(--card-bg);
-            border: 1px solid var(--border);
-            border-radius: 6px;
-            padding: 16px;
-        }
-        .stat-label {
-            color: var(--text-secondary);
-            font-size: 11px;
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
-            margin-bottom: 8px;
-        }
-        .stat-value {
-            font-size: 24px;
-            font-weight: 600;
-            color: var(--text-primary);
-        }
-        .stat-change {
-            font-size: 12px;
-            margin-top: 4px;
-        }
-        .stat-change.up { color: var(--success); }
-        .stat-change.down { color: #f85149; }
-        
-        /* Main Grid */
-        .main-grid {
-            display: grid;
-            grid-template-columns: 1fr 400px;
-            gap: 24px;
-        }
-        
-        /* Chart Area */
-        .chart-panel {
-            background: var(--card-bg);
-            border: 1px solid var(--border);
-            border-radius: 6px;
-            padding: 20px;
-        }
-        .panel-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 16px;
-            padding-bottom: 12px;
-            border-bottom: 1px solid var(--border);
-        }
-        .panel-title {
-            font-weight: 600;
-            color: var(--text-primary);
-        }
-        .panel-controls {
-            display: flex;
-            gap: 8px;
-        }
-        .btn {
-            background: #21262d;
-            border: 1px solid var(--border);
-            color: var(--text-primary);
-            padding: 4px 12px;
-            border-radius: 6px;
-            font-size: 12px;
-            cursor: pointer;
-            transition: all 0.2s;
-        }
-        .btn:hover {
-            background: #30363d;
-        }
-        .btn-primary {
-            background: var(--accent);
-            border-color: var(--accent);
-            color: #fff;
-        }
-        .btn-primary:hover {
-            background: #3f8ef7;
-        }
-        
-        /* Fake Chart */
-        .chart-container {
-            height: 200px;
-            display: flex;
-            align-items: flex-end;
-            gap: 4px;
-            padding: 20px 0;
-        }
-        .chart-bar {
-            flex: 1;
-            background: linear-gradient(180deg, var(--accent) 0%, rgba(88, 166, 255, 0.1) 100%);
-            border-radius: 2px 2px 0 0;
-            transition: height 0.3s;
-        }
-        
-        /* Data Table */
-        .data-panel {
-            background: var(--card-bg);
-            border: 1px solid var(--border);
-            border-radius: 6px;
-            overflow: hidden;
-        }
-        .table-header {
-            display: grid;
-            grid-template-columns: 60px 1fr 80px;
-            padding: 12px 16px;
-            background: #21262d;
-            border-bottom: 1px solid var(--border);
-            font-size: 11px;
-            text-transform: uppercase;
-            color: var(--text-secondary);
-            letter-spacing: 0.05em;
-        }
-        .table-body {
-            max-height: 500px;
-            overflow-y: auto;
-        }
-        .table-row {
-            display: grid;
-            grid-template-columns: 60px 1fr 80px;
-            padding: 10px 16px;
-            border-bottom: 1px solid var(--border);
-            font-size: 12px;
-            cursor: pointer;
-            transition: background 0.2s;
-        }
-        .table-row:hover {
-            background: #21262d;
-        }
-        .table-row.active {
-            background: rgba(88, 166, 255, 0.1);
-            border-left: 3px solid var(--accent);
-        }
-        .timestamp {
-            color: var(--text-secondary);
-            font-family: 'SF Mono', monospace;
-            font-size: 11px;
-        }
-        .data-content {
-            color: var(--text-primary);
-            padding-right: 12px;
-        }
-        .data-cn {
-            color: var(--text-secondary);
-            font-size: 11px;
-            margin-top: 4px;
-        }
-        .status-badge {
-            text-align: right;
-            font-size: 11px;
-        }
-        .status-badge.playing {
-            color: var(--success);
-        }
-        .status-badge.pending {
-            color: var(--text-secondary);
-        }
-        
-        /* Player Controls */
-        .player-bar {
-            background: var(--card-bg);
-            border-top: 1px solid var(--border);
-            padding: 16px 24px;
-            position: fixed;
-            bottom: 0;
-            left: 0;
-            right: 0;
-        }
-        .player-content {
-            max-width: 1400px;
-            margin: 0 auto;
-            display: flex;
-            align-items: center;
-            gap: 24px;
-        }
-        .player-controls {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-        }
-        .player-btn {
-            background: none;
-            border: none;
-            color: var(--text-secondary);
-            cursor: pointer;
-            padding: 8px;
-            border-radius: 6px;
-            transition: all 0.2s;
-        }
-        .player-btn:hover {
-            background: #30363d;
-            color: var(--text-primary);
-        }
-        .play-btn {
-            width: 40px;
-            height: 40px;
-            background: var(--accent);
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: #fff;
-        }
-        .play-btn:hover {
-            background: #3f8ef7;
-        }
-        .progress-container {
-            flex: 1;
-            display: flex;
-            align-items: center;
-            gap: 12px;
-        }
-        .time {
-            font-family: 'SF Mono', monospace;
-            font-size: 11px;
-            color: var(--text-secondary);
-            min-width: 40px;
-        }
-        .progress-bar {
-            flex: 1;
-            height: 4px;
-            background: #30363d;
-            border-radius: 2px;
-            cursor: pointer;
-            position: relative;
-        }
-        .progress-fill {
-            height: 100%;
-            background: var(--accent);
-            border-radius: 2px;
-            width: 0%;
-            transition: width 0.1s linear;
-        }
-        .volume-controls {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-        .volume-slider {
-            width: 80px;
-            height: 4px;
-            background: #30363d;
-            border-radius: 2px;
-            cursor: pointer;
-        }
-        
-        /* Back Link */
-        .back-link {
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-            color: var(--text-secondary);
-            text-decoration: none;
-            font-size: 12px;
-            margin-bottom: 16px;
-        }
-        .back-link:hover {
-            color: var(--accent);
-        }
-        
-        /* Scrollbar */
-        ::-webkit-scrollbar {
-            width: 8px;
-        }
-        ::-webkit-scrollbar-track {
-            background: var(--bg);
-        }
-        ::-webkit-scrollbar-thumb {
-            background: #30363d;
-            border-radius: 4px;
-        }
-        ::-webkit-scrollbar-thumb:hover {
-            background: #484f58;
-        }
-    </style>
+<meta charset="UTF-8">
+<title>Server Log Monitor - Production (us-east-1)</title>
+<style>
+    * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+    }
+    body {
+        background-color: #0d1117;
+        color: #c9d1d9;
+        font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
+        font-size: 13px;
+        margin: 0;
+        padding: 20px;
+        line-height: 1.5;
+    }
+    ::-webkit-scrollbar {
+        width: 8px;
+    }
+    ::-webkit-scrollbar-track {
+        background: #0d1117;
+    }
+    ::-webkit-scrollbar-thumb {
+        background: #30363d;
+        border-radius: 4px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+        background: #484f58;
+    }
+    #header {
+        border-bottom: 1px solid #30363d;
+        padding-bottom: 12px;
+        margin-bottom: 16px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        position: sticky;
+        top: 0;
+        background: #0d1117;
+        z-index: 100;
+    }
+    .header-left {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+    }
+    .server-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 4px 10px;
+        background: #21262d;
+        border: 1px solid #30363d;
+        border-radius: 6px;
+        font-size: 12px;
+    }
+    .status-dot {
+        width: 8px;
+        height: 8px;
+        background: #3fb950;
+        border-radius: 50%;
+        animation: pulse 2s infinite;
+    }
+    @keyframes pulse {
+        0%, 100% { opacity: 1; }
+        50% { opacity: 0.5; }
+    }
+    select {
+        background-color: #21262d;
+        color: #c9d1d9;
+        border: 1px solid #30363d;
+        padding: 6px 12px;
+        border-radius: 6px;
+        font-family: inherit;
+        font-size: 12px;
+        outline: none;
+        cursor: pointer;
+    }
+    select:hover {
+        border-color: #8b949e;
+    }
+    #controls-hint {
+        color: #8b949e;
+        font-size: 11px;
+        display: flex;
+        gap: 16px;
+    }
+    .hint-key {
+        background: #21262d;
+        padding: 2px 6px;
+        border-radius: 4px;
+        border: 1px solid #30363d;
+        font-size: 10px;
+    }
+    #log-container {
+        max-height: calc(100vh - 180px);
+        overflow-y: auto;
+        padding-right: 8px;
+    }
+    .log-line {
+        display: grid;
+        grid-template-columns: 180px 60px 1fr;
+        gap: 12px;
+        padding: 3px 8px;
+        cursor: pointer;
+        transition: background-color 0.15s;
+        border-radius: 4px;
+        margin-bottom: 2px;
+    }
+    .log-line:hover {
+        background-color: #1f2428;
+    }
+    .log-line.active {
+        background-color: #2b313c;
+        border-left: 3px solid #58a6ff;
+        padding-left: 5px;
+    }
+    .timestamp {
+        color: #8b949e;
+        font-size: 12px;
+        white-space: nowrap;
+    }
+    .level-badge {
+        display: inline-block;
+        padding: 1px 6px;
+        border-radius: 4px;
+        font-size: 11px;
+        font-weight: 600;
+        text-align: center;
+        min-width: 50px;
+    }
+    .level-info {
+        background: rgba(56, 139, 253, 0.15);
+        color: #58a6ff;
+    }
+    .level-data {
+        background: rgba(126, 231, 135, 0.15);
+        color: #7ee787;
+    }
+    .level-warn {
+        background: rgba(210, 153, 34, 0.15);
+        color: #d29922;
+    }
+    .log-content {
+        color: #c9d1d9;
+        word-break: break-word;
+        line-height: 1.6;
+    }
+    .log-content-cn {
+        color: #484f58;
+        font-size: 12px;
+        margin-top: 3px;
+        display: none;
+    }
+    .log-line.show-cn .log-content-cn {
+        display: block;
+    }
+    #player-bar {
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        background: #161b22;
+        border-top: 1px solid #30363d;
+        padding: 12px 20px;
+        display: flex;
+        align-items: center;
+        gap: 16px;
+    }
+    .player-controls {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+    .player-btn {
+        background: #21262d;
+        border: 1px solid #30363d;
+        color: #c9d1d9;
+        width: 32px;
+        height: 32px;
+        border-radius: 6px;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 14px;
+        transition: all 0.2s;
+    }
+    .player-btn:hover {
+        background: #30363d;
+        border-color: #8b949e;
+    }
+    .play-btn {
+        width: 36px;
+        height: 36px;
+        background: #1f6feb;
+        border-color: #1f6feb;
+        color: #fff;
+    }
+    .play-btn:hover {
+        background: #388bfd;
+    }
+    .progress-container {
+        flex: 1;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+    .time-display {
+        color: #8b949e;
+        font-size: 11px;
+        font-family: inherit;
+        min-width: 40px;
+    }
+    .progress-bar {
+        flex: 1;
+        height: 4px;
+        background: #30363d;
+        border-radius: 2px;
+        cursor: pointer;
+        position: relative;
+    }
+    .progress-bar:hover {
+        height: 6px;
+    }
+    .progress-fill {
+        height: 100%;
+        background: #1f6feb;
+        border-radius: 2px;
+        width: 0%;
+        transition: width 0.1s linear;
+    }
+    .volume-control {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+    }
+    .volume-slider {
+        width: 80px;
+        height: 4px;
+        background: #30363d;
+        border-radius: 2px;
+        cursor: pointer;
+        -webkit-appearance: none;
+    }
+    .volume-slider::-webkit-slider-thumb {
+        -webkit-appearance: none;
+        width: 12px;
+        height: 12px;
+        background: #8b949e;
+        border-radius: 50%;
+        cursor: pointer;
+    }
+    .volume-slider::-webkit-slider-thumb:hover {
+        background: #c9d1d9;
+    }
+    .toggle-cn {
+        background: none;
+        border: 1px solid #30363d;
+        color: #8b949e;
+        padding: 4px 10px;
+        border-radius: 6px;
+        font-size: 11px;
+        cursor: pointer;
+        margin-left: 8px;
+    }
+    .toggle-cn:hover {
+        border-color: #8b949e;
+        color: #c9d1d9;
+    }
+    .toggle-cn.active {
+        background: #1f6feb;
+        border-color: #1f6feb;
+        color: #fff;
+    }
+    #audio-element {
+        display: none;
+    }
+</style>
 </head>
 <body>
-    <header>
-        <div class="header-left">
-            <div class="logo">📊 Analytics</div>
-            <div class="breadcrumb">dashboard / <span>session-view</span></div>
-        </div>
-        <div class="status">
+
+<div id="header">
+    <div class="header-left">
+        <div class="server-badge">
             <div class="status-dot"></div>
-            Live
+            <strong>prod-cluster-us-east-1</strong>
         </div>
-    </header>
-
-    <div class="container">
-        <a href="../" class="back-link">← Back to Dashboard</a>
-        
-        <!-- Stats -->
-        <div class="stats-grid">
-            <div class="stat-card">
-                <div class="stat-label">Session Duration</div>
-                <div class="stat-value" id="statDuration">00:00</div>
-                <div class="stat-change up">+0.0% from baseline</div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-label">Data Points</div>
-                <div class="stat-value" id="statPoints">0</div>
-                <div class="stat-change up">+0.0% efficiency</div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-label">Throughput</div>
-                <div class="stat-value" id="statThroughput">0 MB/s</div>
-                <div class="stat-change down">-0.0% latency</div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-label">Status</div>
-                <div class="stat-value" style="color: var(--success);">Active</div>
-                <div class="stat-change">System nominal</div>
-            </div>
-        </div>
-
-        <!-- Main Content -->
-        <div class="main-grid">
-            <!-- Chart Panel -->
-            <div class="chart-panel">
-                <div class="panel-header">
-                    <div class="panel-title">Real-time Metrics</div>
-                    <div class="panel-controls">
-                        <button class="btn">Export</button>
-                        <button class="btn">Refresh</button>
-                    </div>
-                </div>
-                <div class="chart-container" id="chart">
-                    <!-- Bars will be generated by JS -->
-                </div>
-            </div>
-
-            <!-- Data Table -->
-            <div class="data-panel">
-                <div class="table-header">
-                    <div>ID</div>
-                    <div>Payload</div>
-                    <div>Status</div>
-                </div>
-                <div class="table-body" id="dataTable">
-                    <!-- Rows will be generated by JS -->
-                </div>
-            </div>
-        </div>
+        <span style="color: #8b949e;">worker logs:</span>
+        <select id="episode-select" onchange="loadEpisode(this.value)">
+            <option value="">Select session...</option>
+        </select>
     </div>
+    <div id="controls-hint">
+        <span><span class="hint-key">Space</span> Play/Pause</span>
+        <span><span class="hint-key">←</span><span class="hint-key">→</span> Skip 5s</span>
+        <span><span class="hint-key">↑</span><span class="hint-key">↓</span> Navigate</span>
+        <button class="toggle-cn" id="toggleCn" onclick="toggleChinese()">Show Translation</button>
+    </div>
+</div>
 
-    <!-- Player Bar -->
-    <div class="player-bar">
-        <div class="player-content">
-            <div class="player-controls">
-                <button class="player-btn" onclick="rewind()">⏪</button>
-                <button class="play-btn" onclick="togglePlay()" id="playBtn">▶</button>
-                <button class="player-btn" onclick="forward()">⏩</button>
-            </div>
-            <div class="progress-container">
-                <div class="time" id="currentTime">00:00</div>
-                <div class="progress-bar" onclick="seek(event)">
-                    <div class="progress-fill" id="progressFill"></div>
-                </div>
-                <div class="time" id="duration">00:00</div>
-            </div>
-            <div class="volume-controls">
-                <span style="color: var(--text-secondary); font-size: 12px;">🔊</span>
-                <input type="range" class="volume-slider" min="0" max="100" value="80" onchange="setVolume(this.value)">
+<div id="log-container"></div>
+
+<div id="player-bar">
+    <div class="player-controls">
+        <button class="player-btn" onclick="skip(-10)" title="Rewind 10s">⏪</button>
+        <button class="player-btn play-btn" id="playBtn" onclick="togglePlay()" title="Play/Pause">▶</button>
+        <button class="player-btn" onclick="skip(10)" title="Forward 10s">⏩</button>
+    </div>
+    <div class="progress-container">
+        <span class="time-display" id="current-time">00:00</span>
+        <div class="progress-bar" onclick="seek(event)">
+            <div class="progress-fill" id="progress-fill"></div>
+        </div>
+        <span class="time-display" id="duration">00:00</span>
+    </div>
+    <div class="volume-control">
+        <span style="color: #8b949e; font-size: 14px;">🔊</span>
+        <input type="range" class="volume-slider" min="0" max="100" value="80" oninput="setVolume(this.value)">
+    </div>
+</div>
+
+<audio id="audio-element" preload="metadata"></audio>
+
+<script>
+// Episode data
+const episodes = [
+    { id: '282', title: 'Session-282: Episode 1-46 Linden Street ACT-I', mp3: '../audio.mp3', offset: 0 },
+    { id: '283', title: 'Session-283: Episode 1-46 Linden Street ACT-II', mp3: '../audio.mp3', offset: 0 },
+    { id: '284', title: 'Session-284: Episode 1-46 Linden Street ACT-III', mp3: '../audio.mp3', offset: 0 },
+];
+
+// Subtitle data - will be loaded dynamically
+const subtitles = [
+    { time: 3, level: 'INFO', text: 'Marilyn, you want coffee or tea?', cn: '玛丽琳，你喝咖啡还是喝茶？' },
+    { time: 6, level: 'DATA', text: 'Coffee, please.', cn: '请给我咖啡。' },
+    { time: 8, level: 'INFO', text: 'I am so excited! At this time tomorrow morning, Grandpa will be sitting in the kitchen with us.', cn: '我太激动了！明天早上的这个时候，你爷爷就会和我们一起坐在这厨房里啦。' },
+    { time: 13, level: 'INFO', text: 'When does he arrive?', cn: '他什么时候到？' },
+    { time: 15, level: 'DATA', text: 'At six o\'clock this evening.', cn: '今天晚上 6 点。' },
+    { time: 18, level: 'INFO', text: 'By plane?', cn: '是坐飞机来吗？' },
+    { time: 20, level: 'DATA', text: 'No, by train.', cn: '不，是坐火车来。' },
+    { time: 22, level: 'INFO', text: 'Are we picking him up at the station?', cn: '我们去车站接他吗？' },
+    { time: 25, level: 'WARN', text: 'Not Grandpa. He doesn\'t want anybody picking him up. He likes to be independent.', cn: '你爷爷可不需要，他不愿意让别人接他，他喜欢独来独往。' },
+    { time: 30, level: 'DATA', text: 'Huh.', cn: '哦。' },
+    { time: 32, level: 'INFO', text: 'Oh, let\'s go upstairs and prepare Grandpa\'s room.', cn: '噢，咱们上楼去给爷爷收拾一下房间吧。' },
+    { time: 36, level: 'DATA', text: 'Great! Let\'s do it!', cn: '好极了！走吧。' },
+];
+
+let currentIndex = -1;
+let isPlaying = false;
+let showChinese = false;
+let activeRow = null;
+
+const audio = document.getElementById('audio-element');
+const playBtn = document.getElementById('playBtn');
+const progressFill = document.getElementById('progress-fill');
+const currentTimeEl = document.getElementById('current-time');
+const durationEl = document.getElementById('duration');
+const logContainer = document.getElementById('log-container');
+const episodeSelect = document.getElementById('episode-select');
+
+// Initialize
+function init() {
+    // Populate episode selector
+    episodes.forEach(ep => {
+        const opt = document.createElement('option');
+        opt.value = ep.id;
+        opt.textContent = ep.title;
+        episodeSelect.appendChild(opt);
+    });
+    
+    // Render logs
+    renderLogs();
+    
+    // Audio events
+    audio.addEventListener('loadedmetadata', () => {
+        durationEl.textContent = formatTime(audio.duration);
+    });
+    
+    audio.addEventListener('timeupdate', updateProgress);
+    audio.addEventListener('ended', () => {
+        isPlaying = false;
+        playBtn.textContent = '▶';
+    });
+    
+    // Keyboard shortcuts
+    document.addEventListener('keydown', handleKeydown);
+}
+
+function generateFakeTimestamp(lineIndex) {
+    const base = new Date('2026-03-11T08:00:00Z');
+    base.setSeconds(base.getSeconds() + lineIndex * 3);
+    return base.toISOString().replace('T', ' ').substring(0, 19) + 'Z';
+}
+
+function renderLogs() {
+    logContainer.innerHTML = subtitles.map((sub, i) => `
+        <div class="log-line" id="log-${i}" onclick="seekTo(${sub.time})">
+            <span class="timestamp">${generateFakeTimestamp(i)}</span>
+            <span class="level-badge level-${sub.level.toLowerCase()}">${sub.level}</span>
+            <div class="log-content">
+                <div>${escapeHtml(sub.text)}</div>
+                <div class="log-content-cn">${escapeHtml(sub.cn)}</div>
             </div>
         </div>
-    </div>
+    `).join('');
+}
 
-    <audio id="audioPlayer" preload="metadata">
-        <source src="../audio.mp3" type="audio/mpeg">
-    </audio>
+function escapeHtml(text) {
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+}
 
-    <script>
-        const audio = document.getElementById('audioPlayer');
-        const playBtn = document.getElementById('playBtn');
-        const progressFill = document.getElementById('progressFill');
-        const currentTimeEl = document.getElementById('currentTime');
-        const durationEl = document.getElementById('duration');
-        const dataTable = document.getElementById('dataTable');
-        const chart = document.getElementById('chart');
+function updateProgress() {
+    const current = audio.currentTime;
+    const duration = audio.duration;
+    
+    if (duration) {
+        // Update progress bar
+        const percent = (current / duration) * 100;
+        progressFill.style.width = percent + '%';
+        currentTimeEl.textContent = formatTime(current);
         
-        let isPlaying = false;
-        let activeRowIndex = -1;
+        // Update active log line
+        updateActiveLine(current);
+    }
+}
 
-        // Sample data - replace with actual subtitles
-        const subtitles = [
-            { id: '001', en: 'Marilyn, you want coffee or tea?', cn: '玛丽琳，你喝咖啡还是喝茶？', time: 3 },
-            { id: '002', en: 'Coffee, please.', cn: '请给我咖啡。', time: 6 },
-            { id: '003', en: 'I am so excited! At this time tomorrow morning, Grandpa will be sitting in the kitchen with us.', cn: '我太激动了！明天早上的这个时候，你爷爷就会和我们一起坐在这厨房里啦。', time: 8 },
-            { id: '004', en: 'When does he arrive?', cn: '他什么时候到？', time: 13 },
-            { id: '005', en: 'At six o\'clock this evening.', cn: '今天晚上 6 点。', time: 15 },
-            { id: '006', en: 'By plane?', cn: '是坐飞机来吗？', time: 18 },
-            { id: '007', en: 'No, by train.', cn: '不，是坐火车来。', time: 20 },
-            { id: '008', en: 'Are we picking him up at the station?', cn: '我们去车站接他吗？', time: 22 },
-            { id: '009', en: 'Not Grandpa. He doesn\'t want anybody picking him up. He likes to be independent.', cn: '你爷爷可不需要，他不愿意让别人接他，他喜欢独来独往。', time: 25 },
-            { id: '010', en: 'Huh.', cn: '哦。', time: 30 },
-            { id: '011', en: 'Oh, let\'s go upstairs and prepare Grandpa\'s room.', cn: '噢，咱们上楼去给爷爷收拾一下房间吧。', time: 32 },
-            { id: '012', en: 'Great! Let\'s do it!', cn: '好极了！走吧。', time: 36 },
-        ];
-
-        // Initialize
-        function init() {
-            renderTable();
-            renderChart();
-            
-            audio.addEventListener('loadedmetadata', () => {
-                durationEl.textContent = formatTime(audio.duration);
-            });
-            
-            audio.addEventListener('timeupdate', updateProgress);
-            audio.addEventListener('ended', () => {
-                isPlaying = false;
-                playBtn.textContent = '▶';
-            });
+function updateActiveLine(time) {
+    let newIndex = -1;
+    for (let i = subtitles.length - 1; i >= 0; i--) {
+        if (time >= subtitles[i].time) {
+            newIndex = i;
+            break;
         }
-
-        function renderTable() {
-            dataTable.innerHTML = subtitles.map((sub, index) => `
-                <div class="table-row" id="row-${index}" onclick="seekTo(${sub.time})">
-                    <div class="timestamp">${sub.id}</div>
-                    <div>
-                        <div class="data-content">${sub.en}</div>
-                        <div class="data-cn">${sub.cn}</div>
-                    </div>
-                    <div class="status-badge pending" id="status-${index}">pending</div>
-                </div>
-            `).join('');
+    }
+    
+    if (newIndex !== currentIndex) {
+        // Remove old active
+        if (activeRow) {
+            activeRow.classList.remove('active');
         }
+        
+        // Add new active
+        activeRow = document.getElementById(`log-${newIndex}`);
+        if (activeRow) {
+            activeRow.classList.add('active');
+            activeRow.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+        
+        currentIndex = newIndex;
+    }
+}
 
-        function renderChart() {
-            for (let i = 0; i < 40; i++) {
-                const bar = document.createElement('div');
-                bar.className = 'chart-bar';
-                bar.style.height = Math.random() * 100 + '%';
-                chart.appendChild(bar);
+function formatTime(seconds) {
+    const mins = Math.floor(seconds / 60);
+    const secs = Math.floor(seconds % 60);
+    return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+}
+
+function togglePlay() {
+    if (isPlaying) {
+        audio.pause();
+        playBtn.textContent = '▶';
+    } else {
+        audio.play();
+        playBtn.textContent = '⏸';
+    }
+    isPlaying = !isPlaying;
+}
+
+function skip(seconds) {
+    audio.currentTime = Math.max(0, Math.min(audio.duration, audio.currentTime + seconds));
+}
+
+function seek(event) {
+    const rect = event.target.getBoundingClientRect();
+    const percent = (event.clientX - rect.left) / rect.width;
+    audio.currentTime = percent * audio.duration;
+}
+
+function seekTo(time) {
+    audio.currentTime = time;
+    if (!isPlaying) {
+        togglePlay();
+    }
+}
+
+function setVolume(value) {
+    audio.volume = value / 100;
+}
+
+function toggleChinese() {
+    showChinese = !showChinese;
+    document.getElementById('toggleCn').classList.toggle('active', showChinese);
+    document.getElementById('toggleCn').textContent = showChinese ? 'Hide Translation' : 'Show Translation';
+    
+    if (showChinese) {
+        logContainer.classList.add('show-cn');
+    } else {
+        logContainer.classList.remove('show-cn');
+    }
+}
+
+function loadEpisode(id) {
+    // In full version, this would load different subtitle data
+    console.log('Loading episode:', id);
+    currentIndex = -1;
+    activeRow = null;
+    renderLogs();
+}
+
+function handleKeydown(e) {
+    // Don't trigger if typing in input
+    if (e.target.tagName === 'INPUT' || e.target.tagName === 'SELECT') return;
+    
+    switch(e.code) {
+        case 'Space':
+            e.preventDefault();
+            togglePlay();
+            break;
+        case 'ArrowLeft':
+            skip(-5);
+            break;
+        case 'ArrowRight':
+            skip(5);
+            break;
+        case 'ArrowUp':
+            if (currentIndex > 0) {
+                seekTo(subtitles[currentIndex - 1].time);
             }
-        }
-
-        function updateProgress() {
-            const currentTime = audio.currentTime;
-            const duration = audio.duration;
-            
-            if (duration) {
-                const percent = (currentTime / duration) * 100;
-                progressFill.style.width = percent + '%';
-                currentTimeEl.textContent = formatTime(currentTime);
-                
-                // Update active row
-                updateActiveRow(currentTime);
-                
-                // Update chart animation
-                updateChart(currentTime);
-                
-                // Update stats
-                updateStats(currentTime);
+            break;
+        case 'ArrowDown':
+            if (currentIndex < subtitles.length - 1) {
+                seekTo(subtitles[currentIndex + 1].time);
             }
-        }
+            break;
+    }
+}
 
-        function updateActiveRow(time) {
-            let newIndex = -1;
-            for (let i = subtitles.length - 1; i >= 0; i--) {
-                if (time >= subtitles[i].time) {
-                    newIndex = i;
-                    break;
-                }
-            }
-            
-            if (newIndex !== activeRowIndex) {
-                document.querySelectorAll('.table-row').forEach(row => row.classList.remove('active'));
-                document.querySelectorAll('.status-badge').forEach(badge => {
-                    badge.textContent = 'pending';
-                    badge.classList.remove('playing');
-                });
-                
-                if (newIndex >= 0) {
-                    const row = document.getElementById(`row-${newIndex}`);
-                    if (row) {
-                        row.classList.add('active');
-                        row.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                        const status = document.getElementById(`status-${newIndex}`);
-                        status.textContent = 'active';
-                        status.classList.add('playing');
-                    }
-                }
-                activeRowIndex = newIndex;
-            }
-        }
+// Start
+init();
+</script>
 
-        function updateChart(time) {
-            const bars = document.querySelectorAll('.chart-bar');
-            bars.forEach((bar, i) => {
-                bar.style.height = (Math.random() * 50 + 25) + '%';
-            });
-        }
-
-        function updateStats(time) {
-            document.getElementById('statDuration').textContent = formatTime(time);
-            document.getElementById('statPoints').textContent = activeRowIndex + 1;
-            document.getElementById('statThroughput').toFixed(2) + ' MB/s';
-        }
-
-        function formatTime(seconds) {
-            const mins = Math.floor(seconds / 60);
-            const secs = Math.floor(seconds % 60);
-            return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
-        }
-
-        function togglePlay() {
-            if (isPlaying) {
-                audio.pause();
-                playBtn.textContent = '▶';
-            } else {
-                audio.play();
-                playBtn.textContent = '⏸';
-            }
-            isPlaying = !isPlaying;
-        }
-
-        function rewind() {
-            audio.currentTime = Math.max(0, audio.currentTime - 10);
-        }
-
-        function forward() {
-            audio.currentTime = Math.min(audio.duration, audio.currentTime + 10);
-        }
-
-        function seek(event) {
-            const rect = event.target.getBoundingClientRect();
-            const percent = (event.clientX - rect.left) / rect.width;
-            audio.currentTime = percent * audio.duration;
-        }
-
-        function seekTo(time) {
-            audio.currentTime = time;
-            if (!isPlaying) {
-                togglePlay();
-            }
-        }
-
-        function setVolume(value) {
-            audio.volume = value / 100;
-        }
-
-        init();
-    </script>
 </body>
 </html>
