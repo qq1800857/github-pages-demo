@@ -1,0 +1,485 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Update core dependencies · Workflow run · GitHub</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f6f8fa;
+            color: #24292e;
+            font-size: 14px;
+            line-height: 1.5;
+        }
+
+        /* Fake GitHub Top Navbar */
+        .github-nav {
+            background-color: #24292e;
+            height: 60px;
+            display: flex;
+            align-items: center;
+            padding: 0 16px;
+            color: rgba(255,255,255,0.7);
+        }
+        .github-nav svg {
+            fill: #fff;
+            margin-right: 15px;
+        }
+
+        /* Header area */
+        .pagehead {
+            background-color: #fff;
+            padding: 24px 32px 16px;
+            border-bottom: 1px solid #e1e4e8;
+            margin-bottom: 24px;
+        }
+        .repo-title {
+            font-size: 20px;
+            color: #0366d6;
+            margin-bottom: 8px;
+        }
+        .run-title {
+            font-size: 24px;
+            font-weight: 400;
+        }
+
+        .layout {
+            display: flex;
+            max-width: 1280px;
+            margin: 0 auto;
+            padding: 0 32px;
+        }
+
+        /* Left sidebar - Actions Steps */
+        .actions-sidebar {
+            width: 280px;
+            background-color: #fff;
+            border: 1px solid #e1e4e8;
+            border-radius: 6px;
+            margin-right: 24px;
+            align-self: flex-start;
+        }
+        .step-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+        .step-item {
+            padding: 12px 16px;
+            border-bottom: 1px solid #eaecef;
+            display: flex;
+            align-items: center;
+            color: #586069;
+            cursor: default;
+        }
+        .step-item:last-child {
+            border-bottom: none;
+        }
+        .step-item svg {
+            fill: #28a745;
+            margin-right: 8px;
+        }
+        .step-item.active {
+            background-color: #f1f8ff;
+            border-left: 3px solid #0366d6;
+            padding-left: 13px;
+            color: #24292e;
+            font-weight: 500;
+        }
+        .step-item.active svg {
+            fill: #dbab09; /* "Running" orange color */
+        }
+
+        /* Right area - Terminal Log */
+        .actions-main {
+            flex: 1;
+            min-width: 0;
+        }
+        .terminal-header {
+            background-color: #f6f8fa;
+            border: 1px solid #e1e4e8;
+            border-bottom: none;
+            border-top-left-radius: 6px;
+            border-top-right-radius: 6px;
+            padding: 10px 16px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        /* Secret episode selector disguised as environment selector */
+        .job-selector select {
+            background-color: #fff;
+            border: 1px solid #d1d5da;
+            border-radius: 4px;
+            padding: 4px 8px;
+            font-size: 13px;
+            color: #24292e;
+            outline: none;
+            cursor: pointer;
+        }
+
+        .terminal-window {
+            background-color: #0d1117;
+            color: #b3b1ad;
+            border: 1px solid #e1e4e8;
+            border-bottom-left-radius: 6px;
+            border-bottom-right-radius: 6px;
+            height: 600px; /* Big height perfect for pretending to read logs */
+            overflow-y: scroll;
+            font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
+            font-size: 12px;
+            padding: 16px 0;
+            box-shadow: inset 0 0 10px rgba(0,0,0,0.5);
+        }
+
+        .terminal-window::-webkit-scrollbar {
+            width: 14px;
+            background: #0d1117;
+        }
+        .terminal-window::-webkit-scrollbar-thumb {
+            background-color: #484f58;
+            border: 3px solid #0d1117;
+            border-radius: 7px;
+        }
+
+        .log-line {
+            padding: 1px 16px;
+            display: flex;
+            opacity: 0.6;
+            transition: all 0.1s ease;
+        }
+
+        .log-line:hover {
+            background-color: #161b22;
+            opacity: 0.8;
+        }
+
+        .log-line.active {
+            color: #e6edf3;
+            opacity: 1;
+            background-color: #1f242e;
+            border-left: 2px solid #58a6ff;
+            padding-left: 14px;
+        }
+
+        .timestamp {
+            color: #484f58;
+            min-width: 160px;
+            user-select: none;
+            margin-right: 12px;
+        }
+
+        /* Secret speaker coloring to look like log tags */
+        .speaker-name {
+            color: #d2a8ff;
+            margin-right: 8px;
+        }
+        
+        .active .speaker-name {
+            color: #79c0ff;
+        }
+
+        #audio-player {
+            display: none;
+        }
+
+    </style>
+</head>
+<body>
+
+<div class="github-nav">
+    <svg height="32" viewBox="0 0 16 16" version="1.1" width="32" aria-hidden="true"><path fill-rule="evenodd" d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"></path></svg>
+    <strong>Pull requests &nbsp; Issues &nbsp; Marketplace &nbsp; Explore</strong>
+</div>
+
+<div class="pagehead">
+    <div class="repo-title">organization / <strong>internal-backend-services</strong></div>
+    <div class="run-title">
+        Update core dependencies #1042
+    </div>
+</div>
+
+<div class="layout">
+    <div class="actions-sidebar">
+        <ul class="step-list">
+            <li class="step-item">
+                <svg viewBox="0 0 16 16" width="16" height="16"><path fill-rule="evenodd" d="M13.78 4.22a.75.75 0 010 1.06l-7.25 7.25a.75.75 0 01-1.06 0L2.22 9.28a.75.75 0 011.06-1.06L6 10.94l6.72-6.72a.75.75 0 011.06 0z"></path></svg>
+                Set up job
+            </li>
+            <li class="step-item">
+                <svg viewBox="0 0 16 16" width="16" height="16"><path fill-rule="evenodd" d="M13.78 4.22a.75.75 0 010 1.06l-7.25 7.25a.75.75 0 01-1.06 0L2.22 9.28a.75.75 0 011.06-1.06L6 10.94l6.72-6.72a.75.75 0 011.06 0z"></path></svg>
+                Checkout repository
+            </li>
+            <li class="step-item active">
+                <svg viewBox="0 0 16 16" width="16" height="16"><path fill-rule="evenodd" d="M8 1.5a6.5 6.5 0 100 13 6.5 6.5 0 000-13zM0 8a8 8 0 1116 0A8 8 0 010 8z"></path></svg>
+                Run Maven Build & Tests
+            </li>
+            <li class="step-item">
+                <svg viewBox="0 0 16 16" width="16" height="16" fill="#959da5"><circle cx="8" cy="8" r="4"></circle></svg>
+                Post Run Checkout
+            </li>
+            <li class="step-item">
+                <svg viewBox="0 0 16 16" width="16" height="16" fill="#959da5"><circle cx="8" cy="8" r="4"></circle></svg>
+                Complete job
+            </li>
+        </ul>
+    </div>
+
+    <div class="actions-main">
+        <div class="terminal-header">
+            <strong>Run Maven Build & Tests</strong>
+            <div class="job-selector">
+                <select id="episode-select" onchange="loadEpisode(this.value)"></select>
+            </div>
+        </div>
+        <div class="terminal-window" id="log-container">
+            <!-- Logs go here -->
+        </div>
+    </div>
+</div>
+
+<audio id="audio-player" controls></audio>
+
+<script>
+// We copy the same parsing logic here
+const episodes = [{"title": "Job: ubuntu-latest (matrix 1/3)", "mp3": "Episode 1 46 Linden Street ACT I.mp3", "text": ["Watch the video then answer the question: What does Richard forget?", "Richard: Excuse me. My name is Richard Stewart. I'm a photographer. May I take a picture of you and your little boy?", "Mrs.Vann: What's it for?", "Richard: It's for a book.", "Mrs.Vann: You're writing a book?", "Richard: It's a book of pictures. I call it Family Album, U.S.A.", "Mrs.Vann: Oh, that's a nice idea. Well, it's fine if you take our picture. I'm Martha Vann.", "Richard: Thank you. I appreciate your help. I'm Richard. What's your name?", "Gerald: Gerald.", "Richard: How old are you, Gerald?", "Gerald: Five.", "Richard: And where do you live?", "Mrs.Vann: We live in California.", "Richard: Well, welcome to New York. OK, just a second. I'm almost ready here.", "Alexadra: Can I help you?", "Richard: Oh, please. Hold Gerald's hand, please. Great! Now point to the buildings. Terrific! Give Mommy a kiss, Gerald. Nice! Thank you, Gerald. And thank you, Mrs Vann.", "Mrs.Vann: Oh, my pleasure. We'll be looking for your book.", "Richard: Thank you. Good-bye. Bye, Gerald. Thanks again.", "Alexandra: Oh, you're welcome.", "Richard: Hey, let me take your picture!", "Alexandra: Wonderful. Please.", "Richard: Are you from New York?", "Alexandra: No, I'm from Greece. I'm an exchange student.", "Richard: When did you come here?", "Alexandra: Three months ago.", "Richard: Your English is very good.", "Alexandra: Thanks. I studied English in school.", "Richard: Would you like some coffee?", "Alexandra: No, thank you. Tell me about your book.", "Richard: Oh, it's not finished yet, but I have some of the pictures. Would you like to see them?", "Alexandra: Yes, I'd like that.", "Richard: Here they are. Family Album, U.S.A.. It's an album of pictures of the United States: the cities, the special places, and the people. And these are pictures of people working: steel workers, bankers, police, street vendors, ambulance drivers, doctors...Oh, this is my father. He's a doctor. This is my mother.", "Alexandra: What's her name?", "Richard: Ellen. My younger brother, Robbie. He goes to high school. This is my sister Susan. She works for a toy company. Here's my grandfather. He lives in Florida. And this is my wife Marilyn.", "Alexandra: Oh, she's very pretty.", "Richard: Thanks. And what about your family?", "Alexandra: They're in Thessaloniki. That's a large city in northern Greece. But now I'm living in the Bronx.", "Richard: With a Greek-American family?", "Alexandra: No. Hispanic.", "Richard: Oh no! It's five thirty. Will you excuse me? I have to meet my wife.", "Alexandra: It was nice meeting you.", "Richard: It was a pleasure meeting you, too. Thanks for your help. And good luck! I've got to go. By the way. I'm Richard. What's your name?", "Alexandra: Alexandra.", "Richard: Bye-bye, Alexandra. Thanks.", "Alexandra: Bye-bye. Richard! Richard! You left your bag.", "一般疑问句 特殊疑问句"]}, {"title": "Job: macos-latest (matrix 2/3)", "mp3": "Episode 1 46 Linden Street ACT II.mp3", "text": ["Watch the video then answer the question: Will Marilyn find the bag?", "Alexandra: Excuse me, officer. Can you help me?", "Policeman: Sure.", "Alexandra: Can you tell me how to get to Linden Street, in Riverdale?", "Policeman: \"Richard Stewart, 46 Linden Street, Riverdale, New York.\" You should take the number 1 subway.", "Alexandra: Is there a station near here?", "Policeman: Yes. The station's that way. You should take the number 1 train to Van Cortlandt Park.", "Alexandra: Number 1 train to Van Cortlandt Park. Thank you.", "Policeman: Anytime. Good luck. Remember, the number 1 train. The uptown platform.", "Alexandra: Thank you.", "Policeman: You're welcome.", "Customer: Is this pink too bright for me?", "Marilyn: Mmm-hmm. It is a very bright pink. Try this. It's size eight.", "Customer: But I wear size ten.", "Marilyn: How about green? It's size ten.", "Customer: Let me try it on.", "Customer: I'm taking too much of your time.", "Marilyn: It's six o'clock. Where's my husband? I was expecting him here at five forty-five.", "Customer: Don't worry. The traffic is very heavy at this hour.", "Marilyn: I know. But we're going to be late for dinner.", "Customer: I'll take this green sweater. I like the color on me, don't you?", "Marilyn: I think it looks terrific on you.", "Richard: I'm sorry I'm so late. I had a really bad day.", "Marilyn: It's ten after six. We're late. Robbie's cooking tonight, and dinner's at six thirty.", "Richard: I know. I know. I'm really sorry. I left my bag of film on the ferry. I went back for it, but the ferry was gone. I lost a whole day's work.", "Marilyn: I'll call the Staten Island Ferry lost-and-found office.", "Richard: I didn't think of that. Thanks.", "Marilyn: Hello. Yes. The number, please, of the Staten Island Ferry lost-and-found office. Five five five...zero eight zero eight. Thank you.", "Richard: I really appreciate it, Marilyn.", "Marilyn: Hello. Did anyone find a camera bag this afternoon, a small canvas bag, on the J. F. Kennedy Ferry?...No?", "Marilyn: Maybe someone will find it.The name is Stewart, Richard Stewart. And the telephone number is five five five...three oh nine oh. Thank you.", "Marilyn: Sorry, Richard. They don't have it.", "Richard: Thanks, anyway. There was a girl on the ferry.Now maybe...", "Marilyn: Tell me about it on the way home.", "不定代词"]}, {"title": "Job: windows-latest (matrix 3/3)", "mp3": "Episode 1 46 Linden Street ACT III.mp3", "text": ["Watch the video then answer the question: Who is at the door?", "Philip: And give her a teaspoon of the medicine after every meal. Don't worry. She'll be fine. You're welcome. Good-bye.", "Ellen: How are you?", "Philip: I'm tired and hungry.", "Ellen: Well, Marilyn and Richard called. They'll be here soon, and then we'll eat.", "Philip: All right. Is...is Susan coming?", "Ellen: Well, she'll be here later. She has to work late tonight.", "Philip: And what's Robbie cooking for dinner?", "Ellen: It's a surprise.", "Philip: I hope it's pasta.", "Philip: Robbie, the dinner was terrific.", "Susan: Yes, it was delicious.", "Marilyn: What's for dessert?", "Robbie: Oh, I forgot dessert.", "Philip: Robbie!", "Ellen: Don't worry. We've got lots of ice cream.", "Richard: Oh, I'd love some ice cream.", "Ellen: Well, there's chocolate and coffee and a little vanilla.", "Robbie: I'll have vanilla. Is that all right with everyone?", "Philip: I'll have chocolate.", "Marilyn: Me, too.", "Richard: Uh, one scoop of coffee and one scoop of chocolate for me.", "Ellen: Robbie, will you help me serve?", "Richard: I keep thinking about that bag of film. Eight rolls. A whole day's work. And good stuff, too.", "Ellen: Don't worry, Richard. Somenoe will find it.", "Robbie: I'll get it.", "Robbie: Hello.", "Alexandra: Hello. Does Richard Stewart live here?", "Robbie: Yes, he's my brother. I'm Robbie...Robbie Stewart.", "Alexandra: I'm Alexandra Pappas. How do you do?", "Alexandra: Your brother left his bag of film on the ferryboat. I found it.", "Robbie: I'm really glad to see you. I mean...my brother'll be really glad to see you!", "Ellen: Robbie! Who is it?", "Robbie: It's Richard's film! I mean, Alexandra Pappas.", "Robbie: Come in, please.", "Richard: Alexandra!", "Alexandra: Hello, Richard. I found your bag!", "Richard: Oh, thank you! Thank you! Um...Alexandra, let me introduce you. This is my wife Marilyn.", "Alexandra: Richard showed me your photo. How do you do?", "Marilyn: Oh yes. Richard told us all about you. It's nice to meet you.", "Richard: And this is my mother, Ellen Stewart.", "Alexandra: How do you do?", "Richard: And my father, Dr. Philip Stewart.", "Philip: Nice to meet you, Alexandra.", "Richard: And...ah...you met Robbie.", "Alexandra: Yes. And you must be Susan.", "Susan: Hi. Welcome.", "Richard: I'm so glad you found the bag and took the time and trouble to return it.", "Alexandra: Oh, it was no trouble. I just took the wrong train.", "Ellen: Would you like something to eat?", "Alexandra: Thank you, no. I'm late for dinner at my house. I really have to go.", "Richard: Would you like to call home?", "Alexandra: I'd appreciate that.", "Ellen: Please, use the phone.", "Alexandra: Thanks. Excuse me.", "Richard: Alexandra's a high-school exchange student from Greece.", "Robbie: Where does she live?", "Richard: With a family in the Bronx.", "Robbie: Oh, that's not too far from here!", "Richard: Take it easy, Robbie.", "Alexandra: Thank you. I can only stay a few minutes.", "Ellen: Have some iced tea.", "Alexandra: Thanks, Mrs. Stewart.", "Robbie: Please sit down, Alexandra.", "Philip: So, you're an exchange student. Where do you go to school?", "Alexandra: At the Bronx High School of Science.", "Philip: Oh, that's a very good school. What are your favorite subjects?", "Alexandra: Biology and mathematics. Richard tells me you're a doctor.", "Philip: Yes, a pediatrician. And what does your father do?", "Alexandra: He's a lawyer, in Thessaloniki.", "Robbie: Would you like some pasta? I made it myself. It might be a little cold.", "Alexandra: Thanks, no. I do have to go. It was nice meeting you all.", "Marilyn: Well, maybe you'll come for lunch some Sunday, so we can really thank you for bringing Richard's bag back.", "Alexandra: Maybe.", "Ellen: You're welcome anytime.", "Philip: Good-bye.", "Richard: Can I drive you home?", "Alexandra: No, thanks. The train is just up the street. It won't take me long at all.", "Richard: Well, you really saved the day for me, Alexandra.", "Alexandra: Bye.", "Richard: Bye-bye.", "Ellen: Good night.", "Philip: She's a smart young lady, and very nice.", "Robbie: Very! Hey, she forgot her bag!", "Ellen: I guess we'll be seeing Alexandra again. Right, Robbie?", "简单句 一般现在时"]}];
+
+const select = document.getElementById('episode-select');
+const audio = document.getElementById('audio-player');
+const container = document.getElementById('log-container');
+
+episodes.forEach((ep, index) => {
+    let option = document.createElement('option');
+    option.value = index;
+    option.innerText = ep.title;
+    select.appendChild(option);
+});
+
+let currentCues = [];
+let currentLineIndex = -1;
+
+function parseTime(timeStr) {
+    let parts = timeStr.trim().split(':');
+    let secs = 0;
+    if (parts.length === 3) {
+        secs += parseInt(parts[0], 10) * 3600;
+        secs += parseInt(parts[1], 10) * 60;
+        secs += parseFloat(parts[2]);
+    } else if (parts.length === 2) {
+        secs += parseInt(parts[0], 10) * 60;
+        secs += parseFloat(parts[1]);
+    }
+    return secs;
+}
+
+function parseVTT(vttText) {
+    const lines = vttText.split(/\r?\n/);
+    const cues = [];
+    let i = 0;
+    while (i < lines.length) {
+        if (lines[i].includes('-->')) {
+            let times = lines[i].split('-->');
+            let start = parseTime(times[0]);
+            let end = parseTime(times[1]);
+            i++;
+            let text = "";
+            while (i < lines.length && lines[i].trim() !== "" && !lines[i].includes('-->')) {
+                text += lines[i] + " ";
+                i++;
+            }
+            cues.push({ start, end, text: text.trim() });
+        } else {
+            i++;
+        }
+    }
+    return cues;
+}
+
+function renderTime(secs) {
+    // Make timestamp look like a UTC ISO string typically found in Actions logs
+    let d = new Date(secs * 1000);
+    return "2026-03-12T" + d.toISOString().substr(11, 12) + "Z";
+}
+
+function alignTextToVTT(originalLines, vttCues) {
+    let vttFull = vttCues.map(c => c.text).join(' ');
+    let vttSim = vttFull.toLowerCase().replace(/[^a-z0-9]/g, '');
+    
+    let simToCue = [];
+    let curSimIndex = 0;
+    for (let i = 0; i < vttCues.length; i++) {
+        let simQ = vttCues[i].text.toLowerCase().replace(/[^a-z0-9]/g, '');
+        for (let j = 0; j < simQ.length; j++) {
+            simToCue[curSimIndex++] = i;
+        }
+    }
+    
+    let aligned = [];
+    let searchStart = 0;
+    for (let i = 0; i < originalLines.length; i++) {
+        let line = originalLines[i];
+        let content = line.includes(':') ? line.substring(line.indexOf(':')+1) : line;
+        let simLine = content.toLowerCase().replace(/[^a-z0-9]/g, '');
+        
+        if (simLine.length < 5) {
+            let t = searchStart < simToCue.length ? vttCues[simToCue[searchStart]].start : 0;
+            aligned.push({start: t, end: t + 1, text: line});
+            continue;
+        }
+        
+        let prefix = simLine.substring(0, Math.min(20, simLine.length));
+        let matchIdx = vttSim.indexOf(prefix, Math.max(0, searchStart - 200)); 
+        
+        if (matchIdx === -1 && prefix.length > 10) {
+           prefix = simLine.substring(0, 10);
+           matchIdx = vttSim.indexOf(prefix, Math.max(0, searchStart - 200));
+        }
+        
+        if (matchIdx !== -1) {
+            let cueIdx = simToCue[matchIdx];
+            let start = vttCues[cueIdx].start;
+            
+            searchStart = matchIdx + simLine.length;
+            let endCueIdx = searchStart < simToCue.length ? simToCue[searchStart] : vttCues.length - 1;
+            let end = vttCues[endCueIdx] ? vttCues[endCueIdx].end : start + 2;
+            
+            aligned.push({ start, end: Math.max(start + 0.5, end), text: line });
+        } else {
+            let t = searchStart < simToCue.length ? vttCues[simToCue[searchStart]].start : 0;
+            aligned.push({ start: t, end: t + 1, text: line });
+        }
+    }
+    
+    for (let i = 1; i < aligned.length; i++) {
+        if (aligned[i].start < aligned[i-1].start) {
+            aligned[i].start = aligned[i-1].end;
+            aligned[i].end = Math.max(aligned[i].start + 1, aligned[i].end);
+        }
+    }
+    
+    return aligned;
+}
+
+function renderLinesText(isVTT) {
+    container.innerHTML = '';
+    currentCues.forEach((cue, i) => {
+        let div = document.createElement('div');
+        div.className = 'log-line';
+        div.id = 'line-' + i;
+        
+        let tsStr = isVTT ? renderTime(cue.start) : '2026-03-12T14:00:00.000Z';
+        let ts = `<span class="timestamp">${tsStr}</span>`;
+        
+        let line = cue.text;
+        if (line.includes(':')) {
+            let parts = line.split(':');
+            line = `<span class="speaker-name">[${parts[0].trim()}]</span> ${parts.slice(1).join(':')}`;
+        } else {
+            line = `<span>${line}</span>`;
+        }
+        
+        div.innerHTML = ts + line;
+        div.ondblclick = () => {
+            if(isVTT) {
+                audio.currentTime = cue.start;
+                if(audio.paused) audio.play();
+            }
+            toggleHighlight(i);
+        };
+        container.appendChild(div);
+    });
+    toggleHighlight(0);
+}
+
+function loadEpisode(index) {
+    const ep = episodes[index];
+    audio.src = ep.mp3;
+    audio.load();
+    
+    currentLineIndex = -1;
+    
+    currentCues = ep.text.map(t => ({ start: 0, end: 0, text: t }));
+    renderLinesText(false);
+    
+    const vttFile = ep.mp3.replace('.mp3', '.vtt');
+    fetch(vttFile)
+        .then(res => {
+            if(!res.ok) throw new Error("VTT file not found");
+            return res.text();
+        })
+        .then(text => {
+            if(!text.includes("WEBVTT")) throw new Error("Invalid VTT");
+            let vttCues = parseVTT(text);
+            currentCues = alignTextToVTT(ep.text, vttCues);
+            renderLinesText(true);
+        })
+        .catch(err => {
+            console.log("Could not load VTT file", err);
+        });
+}
+
+audio.addEventListener('timeupdate', () => {
+    if(!currentCues.length || currentCues[0].end === 0) return;
+    
+    const time = audio.currentTime;
+    let activeIndex = -1;
+    for(let i=0; i<currentCues.length; i++) {
+        if(time >= currentCues[i].start && time <= currentCues[i].end + 0.5) {
+            activeIndex = i;
+            break;
+        }
+    }
+    
+    if(activeIndex !== -1 && activeIndex !== currentLineIndex) {
+        toggleHighlight(activeIndex);
+    }
+});
+
+function toggleHighlight(index) {
+    document.querySelectorAll('.log-line.active').forEach(e => e.classList.remove('active'));
+    currentLineIndex = index;
+    let target = document.getElementById('line-' + index);
+    if(target) {
+        target.classList.add('active');
+        // Prevent window scroll, only scroll the actions log container
+        let containerRect = container.getBoundingClientRect();
+        let targetRect = target.getBoundingClientRect();
+        
+        // Custom simple center scroll calculation
+        if (targetRect.top < containerRect.top || targetRect.bottom > containerRect.bottom) {
+            container.scrollTop = target.offsetTop - container.offsetHeight / 2;
+        }
+    }
+}
+
+document.addEventListener('keydown', (e) => {
+    if(e.target.tagName === 'SELECT') return;
+
+    if (e.code === 'Space') {
+        e.preventDefault();
+        if (audio.paused) audio.play();
+        else audio.pause();
+    } else if (e.code === 'ArrowRight') {
+        audio.currentTime += 5;
+    } else if (e.code === 'ArrowLeft') {
+        audio.currentTime -= 5;
+    } else if (e.code === 'ArrowDown') {
+        e.preventDefault();
+        if(currentLineIndex < episodes[select.value].text.length - 1) {
+            toggleHighlight(currentLineIndex + 1);
+        }
+    } else if (e.code === 'ArrowUp') {
+        e.preventDefault();
+        if(currentLineIndex > 0) {
+            toggleHighlight(currentLineIndex - 1);
+        }
+    }
+});
+
+loadEpisode(0);
+</script>
+</body>
+</html>
