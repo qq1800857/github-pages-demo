@@ -371,6 +371,7 @@
         .transcript-content {
             height: 200px; /* Small hidden scrolling area */
             overflow-y: auto;
+            position: relative; /* Ensure offsetTop is relative to THIS container */
             padding: 12px;
             font-family: 'Consolas', 'Courier New', monospace;
             font-size: 12px;
@@ -741,8 +742,8 @@
         if (el) {
             el.classList.add('active');
             // Auto scroll container so current line is in view
-            const targetPos = el.offsetTop - (container.clientHeight / 2) + 10;
-            container.scrollTo({ top: targetPos, behavior: 'smooth' });
+            const targetPos = el.offsetTop - (container.clientHeight / 2) + (el.clientHeight / 2);
+            container.scrollTop = targetPos;
         }
     }
 
