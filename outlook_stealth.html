@@ -401,6 +401,35 @@
             width: 50px;
         }
 
+        /* Translation Tooltip */
+        .translation-tooltip {
+            position: absolute;
+            background: #fff;
+            border: 1px solid var(--outlook-border);
+            border-radius: 4px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            padding: 8px 12px;
+            font-size: 13px;
+            color: var(--outlook-text);
+            z-index: 1000;
+            max-width: 250px;
+            line-height: 1.4;
+            pointer-events: none;
+            display: none;
+        }
+        .translation-tooltip::after {
+            content: '';
+            position: absolute;
+            bottom: -6px;
+            left: 20px;
+            width: 10px;
+            height: 10px;
+            background: #fff;
+            border-bottom: 1px solid var(--outlook-border);
+            border-right: 1px solid var(--outlook-border);
+            transform: rotate(45deg);
+        }
+
         #audio-player { display: none; }
     </style>
 </head>
@@ -645,6 +674,8 @@
         </div>
     </div>
 
+    <div id="translation-bubble" class="translation-tooltip"></div>
+
     <audio id="audio-player"></audio>
 
     <script>
@@ -702,7 +733,7 @@
             div.className = 'transcript-line';
             div.id = 'cue-' + i;
             div.innerHTML = `<span class="line-ts">[${formatTs(cue.start)}]</span> ${cue.text}`;
-            div.onclick = () => {
+            div.ondblclick = () => {
                 audio.currentTime = cue.start;
                 if (audio.paused) audio.play();
             };
@@ -756,6 +787,53 @@
         }
         else if (e.code === 'ArrowRight') { audio.currentTime += 5; }
         else if (e.code === 'ArrowLeft') { audio.currentTime -= 5; }
+    });
+
+    // Translation Logic
+    const bubble = document.getElementById('translation-bubble');
+    document.addEventListener('mouseup', async (e) => {
+        const selection = window.getSelection().toString().trim();
+        
+        if (!selection || selection.length < 2) {
+            bubble.style.display = 'none';
+            return;
+        }
+
+        // Only translate if selection is within the transcript box
+        if (!container.contains(window.getSelection().anchorNode)) {
+            bubble.style.display = 'none';
+            return;
+        }
+
+        // Get selection coordinates
+        const range = window.getSelection().getRangeAt(0);
+        const rect = range.getBoundingClientRect();
+
+        bubble.style.display = 'block';
+        bubble.style.left = `${rect.left + window.scrollX}px`;
+        bubble.style.top = `${rect.top + window.scrollY - bubble.offsetHeight - 10}px`;
+        bubble.innerText = 'Translating...';
+
+        try {
+            const response = await fetch(`https://api.mymemory.translated.net/get?q=${encodeURIComponent(selection)}&langpair=en|zh-CN`);
+            const data = await response.json();
+            if (data.responseData && data.responseData.translatedText) {
+                bubble.innerText = data.responseData.translatedText;
+                // Re-position slightly in case height changed
+                bubble.style.top = `${rect.top + window.scrollY - bubble.offsetHeight - 10}px`;
+            } else {
+                bubble.innerText = 'Translation failed.';
+            }
+        } catch (error) {
+            bubble.innerText = 'Error connecting to API.';
+        }
+    });
+
+    // Hide bubble on click elsewhere
+    document.addEventListener('mousedown', (e) => {
+        if (!bubble.contains(e.target)) {
+            bubble.style.display = 'none';
+        }
     });
 
     loadEpisode();
