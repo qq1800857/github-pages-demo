@@ -3,249 +3,339 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Meeting | Microsoft Teams</title>
-    <link href="https://fonts.googleapis.com/css2?family=Segoe+UI:wght@400;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <title>Internal Project Sync | Microsoft Teams</title>
+    <link href="https://fonts.googleapis.com/css2?family=Segoe+UI:wght@400;600&display=swap" rel="stylesheet">
     <style>
         * { margin:0; padding:0; box-sizing:border-box; }
         :root {
-            --teams-purple: #464775;
-            --teams-bg: #f5f5f5;
+            --teams-purple: #5b5fc7;
+            --teams-light-bg: #f5f5f5;
             --teams-sidebar: #ebebeb;
+            --teams-border: #edebe9;
+            --teams-dark: #242424;
+            --teams-dark-hover: #333333;
             --teams-text: #242424;
             --teams-text-secondary: #616161;
-            --teams-border: #e1e1e1;
-            --teams-active-blue: #5b5fc7;
         }
         body {
             font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
-            background: var(--teams-bg);
+            background: #fff;
             color: var(--teams-text);
             display: flex;
+            flex-direction: column;
             height: 100vh;
             overflow: hidden;
+            font-size: 14px;
+        }
+
+        /* Top Title Bar */
+        .top-bar {
+            height: 48px;
+            background: #fff;
+            border-bottom: 1px solid var(--teams-border);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 16px;
+            flex-shrink: 0;
+            z-index: 100;
+        }
+        .top-bar .left { display: flex; align-items: center; gap: 8px; width: 250px; font-weight: 600; font-size: 16px; color: #444; }
+        .top-bar .left .logo-icon {
+            width: 24px; height: 24px; background: var(--teams-purple); border-radius: 4px; color: #fff;
+            display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: bold;
+            position: relative;
+        }
+        .top-bar .left .logo-icon::after {
+            content: "T";
+        }
+
+        .top-bar .center {
+            flex: 1;
+            max-width: 600px;
+            display: flex; justify-content: center;
+        }
+        .search-box {
+            width: 100%;
+            max-width: 480px;
+            height: 32px;
+            background: #f0f0f0;
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            padding: 0 16px;
+            color: var(--teams-text-secondary);
+            font-size: 13px;
+            box-shadow: inset 0 0 0 1px transparent;
+        }
+        .search-box:hover { box-shadow: inset 0 0 0 1px #d1d1d1; }
+        .search-box svg { width: 14px; height: 14px; fill: currentColor; margin-right: 12px; }
+
+        .top-bar .right { display: flex; align-items: center; gap: 16px; width: 250px; justify-content: flex-end; }
+        .profile-pic { width: 32px; height: 32px; border-radius: 50%; background: #d13438; color: #fff; display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: 600; position: relative; }
+        .profile-pic::after {
+            content: ''; position: absolute; right: -2px; bottom: -2px; width: 12px; height: 12px; background: #107c10;
+            border: 2px solid #fff; border-radius: 50%;
+        }
+
+        .main-layout {
+            flex: 1;
+            display: flex;
+            overflow: hidden;
+            background: #fff;
         }
 
         /* App Sidebar */
         .app-sidebar {
             width: 68px;
             background: var(--teams-sidebar);
-            border-right: 1px solid var(--teams-border);
             display: flex;
             flex-direction: column;
             align-items: center;
-            padding-top: 15px;
+            padding-top: 12px;
             flex-shrink: 0;
+            z-index: 10;
         }
         .app-icon {
-            width: 40px; height: 40px;
-            margin-bottom: 20px;
-            display: flex; flex-direction: column; align-items: center;
+            width: 56px; height: 48px;
+            margin-bottom: 4px;
+            border-radius: 4px;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
             cursor: pointer;
             color: var(--teams-text-secondary);
+            font-size: 10px;
         }
-        .app-icon svg { width: 24px; height: 24px; margin-bottom: 4px; }
-        .app-icon span { font-size: 10px; }
-        .app-icon.active { color: var(--teams-active-blue); }
+        .app-icon:hover { background: #fff; }
+        .app-icon.active { color: var(--teams-purple); position: relative; font-weight: 600; background: #fff; }
+        .app-icon.active::before {
+            content: ''; position: absolute; left: 0; top: 10px; bottom: 10px; width: 3px; background: var(--teams-purple); border-radius: 2px;
+        }
+        .icon-glyph { font-size: 20px; margin-bottom: 2px; width: 24px; height: 24px; display: inline-flex; align-items: center; justify-content: center; }
 
-        /* Content Area */
-        .main-container {
+        /* Meeting Stage */
+        .meeting-stage {
             flex: 1;
             display: flex;
             flex-direction: column;
             background: #fff;
-        }
-
-        /* Top Header */
-        .header {
-            height: 48px;
-            border-bottom: 1px solid var(--teams-border);
-            display: flex;
-            align-items: center;
-            padding: 0 20px;
-            justify-content: space-between;
-        }
-        .header-left { display: flex; align-items: center; gap: 15px; }
-        .back-btn { font-size: 20px; cursor: pointer; color: var(--teams-text-secondary); }
-        .meeting-title { font-size: 16px; font-weight: 600; }
-
-        /* Tabs */
-        .tabs {
-            display: flex;
-            padding-left: 20px;
-            border-bottom: 1px solid var(--teams-border);
-        }
-        .tab {
-            padding: 12px 16px;
-            font-size: 14px;
-            cursor: pointer;
-            color: var(--teams-text-secondary);
-            border-bottom: 2px solid transparent;
-        }
-        .tab.active {
-            color: var(--teams-active-blue);
-            border-bottom-color: var(--teams-active-blue);
-            font-weight: 600;
-        }
-
-        /* Main View Split */
-        .view-content {
-            flex: 1;
-            display: flex;
-            overflow: hidden;
-        }
-
-        /* Left side: Video/Logo placeholder */
-        .video-area {
-            flex: 1;
-            background: #111;
-            display: flex;
-            align-items: center;
-            justify-content: center;
             position: relative;
         }
-        .video-placeholder {
-            width: 120px; height: 120px;
-            background: var(--teams-active-blue);
-            border-radius: 50%;
-            display: flex; align-items: center; justify-content: center;
-            color: #fff; font-size: 48px; font-weight: 600;
+
+        /* Meeting Top Controls */
+        .meeting-header {
+            height: 52px;
+            background: var(--teams-dark);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 16px;
+            color: #fff;
+            z-index: 20;
+            flex-shrink: 0;
         }
+        .meeting-title { font-size: 14px; font-weight: 600; display: flex; align-items: center; gap: 12px; }
+        .meeting-timer { width: 8px; height: 8px; background: #d13438; border-radius: 50%; display: inline-block; animation: pulse 2s infinite; }
+        @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.4; } 100% { opacity: 1; } }
+
         .meeting-controls {
-            position: absolute; bottom: 20px; left: 50%;
-            transform: translateX(-50%);
-            background: rgba(36,36,36,0.85);
-            padding: 8px 16px;
-            border-radius: 8px;
-            display: flex; gap: 15px;
+            display: flex; gap: 4px;
         }
-        .control-btn {
-            background: none; border: none; color: #fff;
-            cursor: pointer; display: flex; flex-direction: column;
-            align-items: center; gap: 4px; font-size: 10px;
+        .ctrl-btn {
+            height: 36px; padding: 0 12px; border-radius: 4px;
+            display: flex; align-items: center; gap: 8px; font-size: 13px; color: #fff; cursor: pointer;
+            transition: background 0.2s;
+        }
+        .ctrl-btn:hover { background: var(--teams-dark-hover); }
+        .ctrl-btn.active { color: #fff; border-bottom: 2px solid var(--teams-purple); border-radius: 4px 4px 0 0; }
+        .ctrl-btn.leave { background: #d13438; font-weight: 600; padding: 0 16px; margin-left: 12px; }
+        .ctrl-btn.leave:hover { background: #a80000; }
+        .ctrl-icon { font-size: 16px; }
+
+        /* Meeting Content Area */
+        .meeting-content {
+            flex: 1;
+            display: flex;
+            background: #000; /* Dark background for video area */
+            overflow: hidden;
+            position: relative;
         }
 
-        /* Right side: Transcript */
-        .transcript-area {
-            width: 360px;
+        /* Video Area */
+        .video-area {
+            flex: 1;
+            display: flex;
+            flex-wrap: wrap;
+            padding: 16px;
+            gap: 16px;
+            justify-content: center;
+            align-content: center;
+        }
+        .video-box {
+            background: #1f1f1f;
+            border-radius: 8px;
+            display: flex; align-items: center; justify-content: center;
+            position: relative;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+            width: calc(50% - 8px);
+            height: 400px;
+            max-width: 600px;
+        }
+        .video-box .initials {
+            width: 100px; height: 100px; border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 36px; font-weight: 600; color: #fff;
+        }
+        .video-box .name-tag {
+            position: absolute; bottom: 12px; left: 12px;
+            background: rgba(0,0,0,0.6); color: #fff; padding: 4px 12px;
+            border-radius: 4px; font-size: 13px; backdrop-filter: blur(4px);
+            display: flex; align-items: center; gap: 8px;
+        }
+
+        /* Transcript Panel */
+        .side-panel {
+            width: 380px;
+            background: #fff;
             border-left: 1px solid var(--teams-border);
             display: flex;
             flex-direction: column;
-            background: #fafafa;
+            flex-shrink: 0;
+            z-index: 10;
         }
-        .transcript-header {
-            padding: 16px;
+        .panel-header {
+            height: 52px;
+            padding: 0 20px;
+            display: flex; align-items: center; justify-content: space-between;
             border-bottom: 1px solid var(--teams-border);
-            font-size: 14px; font-weight: 600;
-            display: flex; justify-content: space-between;
+            font-weight: 600; font-size: 16px; color: #242424;
         }
-        .transcript-content {
+        .panel-header .close-btn { font-size: 18px; color: #616161; cursor: pointer; }
+        
+        .transcript-controls {
+            padding: 12px 20px;
+            border-bottom: 1px solid var(--teams-border);
+            display: flex; gap: 12px; align-items: center;
+        }
+        .lang-select {
+            padding: 6px 12px; border: 1px solid #d1d1d1; border-radius: 4px;
+            font-size: 12px; display: flex; align-items: center; gap: 8px; cursor: pointer;
+        }
+
+        .transcript-body {
             flex: 1;
+            padding: 20px;
             overflow-y: auto;
-            padding: 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
         }
-        .transcript-content::-webkit-scrollbar { width: 6px; }
-        .transcript-content::-webkit-scrollbar-thumb { background: #ddd; border-radius: 3px; }
+        .t-message {
+            display: flex; gap: 12px;
+        }
+        .t-avatar {
+            width: 32px; height: 32px; border-radius: 50%; background: #4f6bed; color: #fff;
+            display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 600; flex-shrink: 0;
+        }
+        .t-content { flex: 1; }
+        .t-header { display: flex; align-items: baseline; gap: 8px; margin-bottom: 4px; }
+        .t-name { font-weight: 600; font-size: 14px; color: #242424; }
+        .t-time { font-size: 12px; color: #616161; }
+        .t-text { font-size: 14px; color: #242424; line-height: 1.5; }
 
-        .transcript-entry {
-            margin-bottom: 16px;
-            font-size: 13px;
-        }
-        .speaker-row {
-            display: flex; align-items: center; gap: 8px; margin-bottom: 4px;
-        }
-        .speaker-avatar {
-            width: 24px; height: 24px; border-radius: 50%;
-            background: #ccc; display: flex; align-items: center; justify-content: center;
-            font-size: 10px; color: #fff;
-        }
-        .speaker-name { font-weight: 600; }
-        .speaker-time { font-size: 11px; color: var(--teams-text-secondary); }
-        .cue-text {
-            color: var(--teams-text);
-            line-height: 1.5;
-            padding: 4px 8px;
+        .transcript-line {
+            padding: 4px 6px;
             border-radius: 4px;
-            transition: background 0.2s;
             cursor: pointer;
+            transition: background 0.1s;
+            display: inline;
         }
-        .cue-text:hover { background: #f0f0f0; }
-        .cue-text.active {
-            background: #ebeeef;
-            border-left: 3px solid var(--teams-active-blue);
-        }
-
-        #episode-select {
-            background: transparent;
-            border: 1px solid var(--teams-border);
-            border-radius: 4px;
-            padding: 2px 8px;
-            font-size: 12px;
-            color: var(--teams-text-secondary);
-        }
+        .transcript-line:hover { background: var(--teams-light-bg); }
+        .transcript-line.active { background: #e0e4fb; font-weight: 500; }
 
         #audio-player { display: none; }
     </style>
 </head>
 <body>
 
-    <!-- Microsoft Teams App Sidebar -->
-    <div class="app-sidebar">
-        <div class="app-icon active">
-            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M19 12a1 1 0 112 0 1 1 0 01-2 0zM12 11a1 1 0 100 2 1 1 0 000-2zM5 12a1 1 0 112 0 1 1 0 01-2 0z" /></svg>
-            <span>Activity</span>
+    <!-- Microsoft Teams White Top Bar -->
+    <div class="top-bar">
+        <div class="left">
+            <div class="logo-icon"></div>
+            Microsoft Teams
         </div>
-        <div class="app-icon">
-            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2a10 10 0 100 20 10 10 0 000-20zM2 12C2 6.48 6.48 2 12 2s10 4.48 10 10-4.48 10-10 10S2 17.52 2 12z" /></svg>
-            <span>Chat</span>
+        <div class="center">
+            <div class="search-box">
+                <svg viewBox="0 0 16 16"><path d="M15.7 14.3l-3.105-3.105A6.966 6.966 0 0014 7c0-3.86-3.14-7-7-7S0 3.14 0 7s3.14 7 7 7c1.745 0 3.345-.64 4.567-1.696l3.125 3.124a.5.5 0 10.708-.707zM7 13c-3.309 0-6-2.691-6-6s2.691-6 6-6 6 2.691 6 6-2.691 6-6 6z"/></svg>
+                <span>Search</span>
+            </div>
         </div>
-        <div class="app-icon">
-            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 6c1.1 0 2 .9 2 2s-.9 2-2 2-2-.9-2-2 .9-2 2-2m0 10c2.7 0 5.8 1.29 6 2H6c.23-.72 3.31-2 6-2m0-12C9.79 4 8 5.79 8 8s1.79 4 4 4 4-1.79 4-4-1.79-4-4-4zm0 10c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z" /></svg>
-            <span>Teams</span>
-        </div>
-        <div class="app-icon">
-            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M19 4h-1V2h-2v2H8V2H6v2H5c-1.11 0-1.99.9-1.99 2L3 20c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 16H5V10h14v10zm0-12H5V6h14v2z" /></svg>
-            <span>Calendar</span>
+        <div class="right">
+            <span style="font-size:18px; cursor:pointer;">⋯</span>
+            <div class="profile-pic">CW</div>
         </div>
     </div>
 
-    <!-- Main Content Area -->
-    <div class="main-container">
-        <div class="header">
-            <div class="header-left">
-                <span class="back-btn">←</span>
-                <span class="meeting-title">Internal Project Sync - Weekly Recap</span>
-            </div>
-            <div>
-                <select id="episode-select" onchange="loadEpisode(this.value)"></select>
-            </div>
+    <div class="main-layout">
+        <!-- New Teams App Sidebar (Light) -->
+        <div class="app-sidebar">
+            <div class="app-icon"><span class="icon-glyph">🔔</span>Activity</div>
+            <div class="app-icon"><span class="icon-glyph">💬</span>Chat</div>
+            <div class="app-icon active"><span class="icon-glyph">👥</span>Teams</div>
+            <div class="app-icon"><span class="icon-glyph">📅</span>Calendar</div>
+            <div class="app-icon"><span class="icon-glyph">📞</span>Calls</div>
+            <div class="app-icon"><span class="icon-glyph">☁️</span>OneDrive</div>
+            <div class="app-icon" style="margin-top:auto;"><span class="icon-glyph">📱</span>Apps</div>
         </div>
 
-        <div class="tabs">
-            <div class="tab">Details</div>
-            <div class="tab">Chat</div>
-            <div class="tab active">Transcript</div>
-            <div class="tab">Files</div>
-            <div class="tab">Attendance</div>
-        </div>
-
-        <div class="view-content">
-            <div class="video-area">
-                <div class="video-placeholder">NR</div>
+        <div class="meeting-stage">
+            <!-- New Teams Meeting Top Controls -->
+            <div class="meeting-header">
+                <div class="meeting-title">
+                    <span class="meeting-timer"></span> 
+                    <span id="meet-timer-text">09:42</span> | Internal Project Sync
+                </div>
                 <div class="meeting-controls">
-                    <div class="control-btn"><span style="font-size:18px">📷</span><span>Camera</span></div>
-                    <div class="control-btn"><span style="font-size:18px">🎤</span><span>Mic</span></div>
-                    <div class="control-btn"><span style="font-size:18px">↗️</span><span>Share</span></div>
-                    <div class="control-btn" style="color:#e23e3e"><span style="font-size:18px">📞</span><span>Leave</span></div>
+                    <div class="ctrl-btn"><span class="ctrl-icon">👥</span>People</div>
+                    <div class="ctrl-btn"><span class="ctrl-icon">💬</span>Chat</div>
+                    <div class="ctrl-btn"><span class="ctrl-icon">✋</span>React</div>
+                    <div class="ctrl-btn"><span class="ctrl-icon">🚪</span>Rooms</div>
+                    <div class="ctrl-btn active"><span class="ctrl-icon">📝</span>Transcript</div>
+                    <div class="ctrl-btn"><span class="ctrl-icon">⋯</span>More</div>
+                    <div style="width:1px; height:24px; background:#4f4f4f; margin: 6px 8px;"></div>
+                    <div class="ctrl-btn"><span class="ctrl-icon">📷</span>Camera</div>
+                    <div class="ctrl-btn"><span class="ctrl-icon">🎤</span>Mic</div>
+                    <div class="ctrl-btn"><span class="ctrl-icon">⬆️</span>Share</div>
+                    <div class="ctrl-btn leave">Leave</div>
                 </div>
             </div>
 
-            <div class="transcript-area">
-                <div class="transcript-header">
-                    <span>Transcript</span>
-                    <span style="font-size:12px; color:var(--teams-active-blue); cursor:pointer;">Search</span>
+            <div class="meeting-content">
+                <!-- Video Grid -->
+                <div class="video-area">
+                    <div class="video-box" style="border: 2px solid var(--teams-purple);">
+                        <div class="initials" style="background:#4f6bed;">NR</div>
+                        <div class="name-tag">🔊 Nayeema Raza</div>
+                    </div>
+                    <div class="video-box">
+                        <div class="initials" style="background:#0078d4;">CW</div>
+                        <div class="name-tag">🔇 Congming Wang</div>
+                    </div>
                 </div>
-                <div class="transcript-content" id="transcript-content">
-                    <!-- Subtitles will appear here -->
+
+                <!-- Authentic Side Panel -->
+                <div class="side-panel">
+                    <div class="panel-header">
+                        Transcript
+                        <span class="close-btn">✕</span>
+                    </div>
+                    <div class="transcript-controls">
+                        <div class="lang-select">🌐 English (US) ⌄</div>
+                        <div style="font-size: 20px; color:#616161; margin-left:auto; cursor:pointer;">⤓</div>
+                    </div>
+
+                    <div class="transcript-body" id="transcript-content">
+                        <!-- Transcripts injected here -->
+                    </div>
                 </div>
             </div>
         </div>
@@ -254,27 +344,27 @@
     <audio id="audio-player"></audio>
 
     <script>
-    const episodes = [
-        {
-            title: "Project Sync - Week 11",
-            mp3: "ted_curiosity.mp3",
-            vtt: "ted_curiosity.vtt"
-        }
-    ];
+    const episode = {
+        title: "Internal Project Sync",
+        mp3: "ted_curiosity.mp3",
+        vtt: "ted_curiosity.vtt"
+    };
 
-    const select = document.getElementById('episode-select');
     const audio = document.getElementById('audio-player');
     const container = document.getElementById('transcript-content');
-
-    episodes.forEach((ep, i) => {
-        let opt = document.createElement('option');
-        opt.value = i;
-        opt.innerText = ep.title;
-        select.appendChild(opt);
-    });
+    const timerEl = document.getElementById('meet-timer-text');
 
     let currentCues = [];
     let currentLineIndex = -1;
+
+    // Update meeting timer
+    let secondsElapsed = 582; // Start at 09:42
+    setInterval(() => {
+        secondsElapsed++;
+        let m = Math.floor(secondsElapsed / 60);
+        let s = secondsElapsed % 60;
+        timerEl.textContent = String(m).padStart(2,'0') + ':' + String(s).padStart(2,'0');
+    }, 1000);
 
     function parseTime(s) {
         let p = s.trim().split(':');
@@ -306,51 +396,56 @@
     }
 
     function formatTs(secs) {
-        let m = Math.floor(secs / 60);
-        let s = Math.floor(secs % 60);
-        return String(m).padStart(2,'0') + ':' + String(s).padStart(2,'0');
+        let h = new Date().getHours();
+        let m = new Date((secondsElapsed + secs) * 1000).getMinutes(); // Fake current time
+        return `${h}:${String(m).padStart(2,'0')} PM`;
     }
 
     function renderCues() {
         container.innerHTML = '';
-        currentCues.forEach((cue, i) => {
-            let entry = document.createElement('div');
-            entry.className = 'transcript-entry';
-            entry.id = 'entry-' + i;
-            
-            // Random speaker assignment for visual variety in Teams transcript
-            const speakers = [
-                { name: "Transcript Bot", color: "#464775", initial: "TB" },
-                { name: "Nayeema Raza", color: "#6554c0", initial: "NR" }
-            ];
-            const speaker = i < 20 ? speakers[0] : speakers[1];
+        
+        // Group cues into "messages" (Blocks of 5 for realism)
+        let htmlChunks = [];
+        let currentBlock = [];
+        let blockStartTime = 0;
 
-            entry.innerHTML = `
-                <div class="speaker-row">
-                    <div class="speaker-avatar" style="background:${speaker.color}">${speaker.initial}</div>
-                    <span class="speaker-name">${speaker.name}</span>
-                    <span class="speaker-time">${formatTs(cue.start)}</span>
-                </div>
-                <div class="cue-text" id="cue-${i}" onclick="jumpTo(${cue.start})">
-                    ${cue.text}
-                </div>
-            `;
-            container.appendChild(entry);
+        currentCues.forEach((cue, i) => {
+            currentBlock.push({ cue, index: i });
+            
+            if (currentBlock.length >= 8 || i === currentCues.length - 1) {
+                let linesHtml = currentBlock.map(b => 
+                    `<span class="transcript-line" id="cue-${b.index}" onclick="playFrom(${b.cue.start})">${b.cue.text} </span>`
+                ).join('');
+
+                let blockHtml = `
+                <div class="t-message">
+                    <div class="t-avatar">NR</div>
+                    <div class="t-content">
+                        <div class="t-header">
+                            <span class="t-name">Nayeema Raza</span>
+                            <span class="t-time">${formatTs(currentBlock[0].cue.start)}</span>
+                        </div>
+                        <div class="t-text">${linesHtml}</div>
+                    </div>
+                </div>`;
+                htmlChunks.push(blockHtml);
+                currentBlock = [];
+            }
         });
+
+        container.innerHTML = htmlChunks.join('');
     }
 
-    function jumpTo(time) {
+    window.playFrom = function(time) {
         audio.currentTime = time;
         if (audio.paused) audio.play();
-    }
+    };
 
-    function loadEpisode(index) {
-        const ep = episodes[index];
-        audio.src = ep.mp3;
+    function loadEpisode() {
+        audio.src = episode.mp3;
         audio.load();
-        currentLineIndex = -1;
-
-        fetch(ep.vtt)
+        
+        fetch(episode.vtt)
             .then(r => r.text())
             .then(text => {
                 currentCues = parseVTT(text);
@@ -371,27 +466,30 @@
     });
 
     function highlight(index) {
-        document.querySelectorAll('.cue-text.active').forEach(e => e.classList.remove('active'));
+        document.querySelectorAll('.transcript-line.active').forEach(e => e.classList.remove('active'));
         currentLineIndex = index;
         let el = document.getElementById('cue-' + index);
         if (el) {
             el.classList.add('active');
-            let cr = container.getBoundingClientRect();
-            let er = el.getBoundingClientRect();
-            if (er.top < cr.top || er.bottom > cr.bottom) {
-                container.scrollTop = document.getElementById('entry-' + index).offsetTop - 40;
-            }
+            // Auto scroll container so current line is in view
+            const targetPos = el.offsetTop - (container.clientHeight / 2) + 20;
+            container.scrollTo({ top: targetPos, behavior: 'smooth' });
         }
     }
 
+    // Hotkeys
     document.addEventListener('keydown', e => {
         if (e.target.tagName === 'INPUT' || e.target.tagName === 'SELECT' || e.target.tagName === 'TEXTAREA') return;
-        if (e.code === 'Space') { e.preventDefault(); audio.paused ? audio.play() : audio.pause(); }
+        if (e.code === 'Space') { 
+            e.preventDefault(); 
+            audio.paused ? audio.play() : audio.pause(); 
+        }
         else if (e.code === 'ArrowRight') { audio.currentTime += 5; }
         else if (e.code === 'ArrowLeft') { audio.currentTime -= 5; }
     });
 
-    loadEpisode(0);
+    loadEpisode();
+
     </script>
 </body>
 </html>

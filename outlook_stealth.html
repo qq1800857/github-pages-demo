@@ -3,20 +3,21 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mail - 1800857@qq.com - Outlook</title>
+    <title>Mail - wang.congming@accenture.com - Outlook</title>
     <link href="https://fonts.googleapis.com/css2?family=Segoe+UI:wght@400;600;700&display=swap" rel="stylesheet">
     <style>
         * { margin:0; padding:0; box-sizing:border-box; }
         :root {
             --outlook-blue: #0078d4;
-            --outlook-bg: #ffffff;
-            --outlook-sidebar: #f3f2f1;
-            --outlook-border: #edebe9;
-            --outlook-text: #323130;
+            --outlook-bg: #fff;
+            --outlook-sidebar: #f5f5f5; /* Very light grey */
+            --outlook-border: #e1dfdd;
+            --outlook-text: #252423;
             --outlook-text-secondary: #605e5c;
             --outlook-hover: #f3f2f1;
-            --outlook-selected: #edebe9;
-            --accenture-purple: #a100ff;
+            --outlook-active: #eff6fc; /* Light blue background for selected items */
+            --outlook-icon: #18181A;
+            --app-bar: #f0f0f0;
         }
         body {
             font-family: 'Segoe UI', 'wf_segoe-ui_normal', 'Segoe', 'Segoe WP', Tahoma, Arial, sans-serif;
@@ -29,63 +30,137 @@
             font-size: 14px;
         }
 
-        /* Top Bar */
+        /* Top Blue Bar */
         .top-bar {
             height: 48px;
             background: var(--outlook-blue);
             display: flex;
             align-items: center;
+            justify-content: space-between;
             padding: 0 16px;
             color: #fff;
             flex-shrink: 0;
             z-index: 100;
         }
-        .top-bar .logo-area { display: flex; align-items: center; gap: 12px; min-width: 200px; }
-        .top-bar .search-box {
-            flex: 0 1 480px;
+        .top-bar .left { display: flex; align-items: center; gap: 16px; width: 250px; }
+        .top-bar .app-launcher { font-size: 20px; cursor: pointer; display: grid; grid-template-columns: repeat(3, 4px); grid-gap: 2px; }
+        .top-bar .app-launcher span { width: 4px; height: 4px; background: #fff; border-radius: 1px; }
+        .top-bar .title { font-weight: 600; font-size: 16px; letter-spacing: 0.3px; }
+
+        .top-bar .center {
+            flex: 1;
+            max-width: 500px;
             margin: 0 auto;
-            position: relative;
         }
-        .top-bar .search-box input {
+        .search-box {
             width: 100%;
             height: 32px;
+            background: #005a9e; /* Darker blue */
             border-radius: 4px;
-            border: none;
-            padding: 0 32px;
-            background: rgba(255, 255, 255, 0.2);
-            color: #fff;
-            font-size: 14px;
+            display: flex;
+            align-items: center;
+            padding: 0 12px;
+            cursor: text;
         }
-        .top-bar .search-box input::placeholder { color: #fff; opacity: 0.8; }
+        .search-box svg { fill: #fff; width: 16px; height: 16px; margin-right: 8px; }
+        .search-box span { color: #fff; opacity: 0.9; font-size: 14px; }
 
+        .top-bar .right { display: flex; align-items: center; gap: 16px; width: 250px; justify-content: flex-end; }
+        .top-bar .icon { font-size: 18px; cursor: pointer; }
+
+        /* App Toolbar (below blue bar) */
+        .app-toolbar {
+            height: 44px;
+            background: var(--outlook-sidebar);
+            border-bottom: 1px solid var(--outlook-border);
+            display: flex;
+            align-items: center;
+            padding: 0;
+            flex-shrink: 0;
+        }
+        /* Mini Sidebar Top Space */
+        .mini-side-top { width: 48px; display: flex; justify-content: center; align-items: center; border-right: 1px solid var(--outlook-border); height: 100%; }
+        .mini-side-top .plus-icon {
+            width: 28px; height: 28px; border: 1px solid #c8c6c4; border-radius: 50%;
+            display: flex; justify-content: center; align-items: center; color: #605e5c; background: #fff; cursor: pointer;
+        }
+
+        /* Folder Action Top */
+        .folder-action-top {
+            width: 260px;
+            padding: 0 12px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            border-right: 1px solid var(--outlook-border);
+            height: 100%;
+        }
+        .hamburger-icon { font-size: 20px; color: #605e5c; cursor: pointer; }
+        .new-mail-btn {
+            background: var(--outlook-blue);
+            color: #fff;
+            border: none;
+            border-radius: 4px;
+            height: 32px;
+            padding: 0 16px;
+            font-weight: 600;
+            font-size: 14px;
+            display: flex; align-items: center; gap: 8px;
+            cursor: pointer;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+
+        /* Main Commands */
+        .main-commands {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            padding: 0 16px;
+            gap: 24px;
+            background: var(--outlook-sidebar);
+            height: 100%;
+        }
+        .cmd-group { display: flex; align-items: center; gap: 16px; }
+        .cmd-item {
+            display: flex; align-items: center; gap: 6px;
+            color: #323130; font-size: 13px; cursor: pointer;
+        }
+        .cmd-item:hover { color: var(--outlook-blue); }
+        .cmd-item .icon { font-size: 16px; color: #605e5c; }
+        .cmd-item:hover .icon { color: var(--outlook-blue); }
+
+        /* Main Layout */
         .main-layout {
             flex: 1;
             display: flex;
             overflow: hidden;
+            background: var(--outlook-bg);
         }
 
         /* Mini Sidebar */
         .mini-sidebar {
             width: 48px;
-            background: #ffffff;
+            background: var(--outlook-sidebar);
             border-right: 1px solid var(--outlook-border);
             display: flex;
             flex-direction: column;
             align-items: center;
             padding-top: 12px;
             flex-shrink: 0;
+            z-index: 10;
         }
-        .mini-icon {
-            width: 32px; height: 32px;
-            margin-bottom: 20px;
+        .mod-icon {
+            width: 36px; height: 36px;
+            margin-bottom: 8px;
+            border-radius: 4px;
             display: flex; align-items: center; justify-content: center;
             cursor: pointer;
-            color: var(--outlook-text-secondary);
+            color: #605e5c;
             font-size: 20px;
         }
-        .mini-icon.active { color: var(--outlook-blue); position: relative; }
-        .mini-icon.active::after {
-            content: ''; position: absolute; left: -8px; top: 0; bottom: 0; width: 3px; background: var(--outlook-blue);
+        .mod-icon.active { background: #fff; color: var(--outlook-blue); box-shadow: 0 1px 3px rgba(0,0,0,0.1); position: relative; }
+        .mod-icon.active::before {
+            content: ''; position: absolute; left: 0; top: 8px; bottom: 8px; width: 3px; background: var(--outlook-blue); border-radius: 2px;
         }
 
         /* Folder Pane */
@@ -96,178 +171,222 @@
             display: flex;
             flex-direction: column;
             overflow-y: auto;
+            overflow-x: hidden;
         }
-        .new-mail-area { padding: 12px; }
-        .new-mail-btn {
-            background: var(--outlook-blue);
-            color: #fff;
-            border: none;
-            border-radius: 4px;
-            width: 100%;
-            height: 36px;
-            font-weight: 600;
-            display: flex; align-items: center; justify-content: center;
-            gap: 8px;
-            cursor: pointer;
-        }
-
-        .folder-tree { padding: 0 8px; }
+        .folder-tree { padding: 8px 4px 8px 8px; }
+        .tree-group { margin-bottom: 12px; }
         .tree-header {
-            padding: 8px 12px 8px 4px;
+            padding: 4px 8px;
             font-weight: 600;
-            display: flex; align-items: center; gap: 8px;
+            display: flex; align-items: center; gap: 6px;
             cursor: pointer;
             font-size: 13px;
-        }
-        .tree-header:hover { background: #e1dfdd; }
-        .tree-node {
-            padding: 6px 12px 6px 20px;
-            font-size: 13px;
-            display: flex; align-items: center; justify-content: space-between;
-            cursor: pointer;
             color: #323130;
         }
-        .tree-node:hover { background: #e1dfdd; border-radius: 4px; }
-        .tree-node.active { background: #edebe9; font-weight: 600; border-radius: 4px; }
-        .tree-node .count { font-size: 11px; color: var(--outlook-blue); }
-        .tree-node .icon { margin-right: 12px; opacity: 0.7; width: 16px; }
+        .tree-header .arrow { font-size: 10px; color: #605e5c; transition: transform 0.2s; }
+        .tree-header.expanded .arrow { transform: rotate(90deg); }
+        .tree-item {
+            padding: 6px 8px 6px 20px;
+            font-size: 13px;
+            display: flex; align-items: center;
+            cursor: pointer;
+            color: #323130;
+            border-radius: 4px;
+            margin-bottom: 2px;
+        }
+        .tree-item:hover { background: #e1dfdd; }
+        .tree-item.active { background: var(--outlook-active); color: #000; font-weight: 600; }
+        .tree-item .icon { font-size: 16px; margin-right: 10px; opacity: 0.8; color: #605e5c; }
+        .tree-item.active .icon { color: var(--outlook-blue); opacity: 1; }
+        .tree-item .name { flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .tree-item .badge { font-size: 12px; color: var(--outlook-blue); font-weight: 600; }
 
         /* Message List */
         .message-list {
-            width: 320px;
+            width: 330px;
             border-right: 1px solid var(--outlook-border);
             display: flex;
             flex-direction: column;
             background: #fff;
             flex-shrink: 0;
+            z-index: 5;
         }
-        .list-header {
-            padding: 12px 16px;
+        .list-title-bar {
+            padding: 16px 16px 12px;
+            display: flex; justify-content: space-between; align-items: flex-end;
+        }
+        .list-title-bar .title { font-size: 20px; font-weight: 600; color: #252423; line-height: 1; }
+        .list-title-bar .filter { font-size: 16px; color: #605e5c; cursor: pointer; }
+        
+        .list-tabs {
+            padding: 0 16px;
+            display: flex;
             border-bottom: 1px solid var(--outlook-border);
-            display: flex; justify-content: space-between; align-items: center;
-            font-size: 14px; font-weight: 600;
+            margin-bottom: 8px;
         }
-        .list-group-header {
-            padding: 8px 16px;
-            font-size: 11px;
-            font-weight: 600;
-            color: var(--outlook-text-secondary);
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
-            background: #fff;
-            position: sticky; top: 0;
-        }
+        .tab { padding: 8px 0; margin-right: 16px; font-size: 13px; font-weight: 600; color: var(--outlook-text-secondary); cursor: pointer; position: relative; }
+        .tab.active { color: var(--outlook-blue); }
+        .tab.active::after { content:''; position:absolute; bottom:-1px; left:0; right:0; height:2px; background:var(--outlook-blue); }
+
         .message-items { flex: 1; overflow-y: auto; }
-        .message-item {
-            padding: 12px 16px;
-            border-bottom: 1px solid var(--outlook-border);
+        .group-header {
+            padding: 6px 16px;
+            font-size: 12px;
+            color: var(--outlook-text-secondary);
+            display: flex; align-items: center; gap: 6px;
+            position: sticky; top: 0; background: #fff; z-index: 2;
+        }
+        .group-header .arrow { font-size: 10px; transform: rotate(90deg); }
+
+        .msg-item {
+            padding: 10px 16px 10px 32px;
             display: flex; gap: 12px;
             cursor: pointer;
             position: relative;
+            border-bottom: 1px solid transparent;
         }
-        .message-item:hover { background: #f3f2f1; }
-        .message-item.active { background: #eff6fc; }
-        .message-item.active::before {
+        .msg-item:hover { background: var(--outlook-hover); }
+        .msg-item.active { background: var(--outlook-active); border-bottom: 1px solid #c7e0f4; }
+        .msg-indicator {
+            position: absolute; left: 16px; top: 22px; width: 8px; height: 8px;
+            background: var(--outlook-blue); border-radius: 50%;
+        }
+        .msg-item.active::before {
             content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 3px; background: var(--outlook-blue);
         }
-        .unread-dot {
-            width: 8px; height: 8px; background: var(--outlook-blue); border-radius: 50%;
-            position: absolute; left: 4px; top: 50%; transform: translateY(-50%);
-        }
 
-        .avatar {
-            width: 36px; height: 36px;
-            border-radius: 50%;
-            color: #fff;
+        .msg-avatar {
+            width: 32px; height: 32px; border-radius: 50%;
+            background: #d13438; color: #fff;
             display: flex; align-items: center; justify-content: center;
-            font-weight: 600; font-size: 14px;
-            flex-shrink: 0;
+            font-size: 12px; font-weight: 600; flex-shrink: 0;
+            margin-top: 2px;
         }
-        .msg-info { flex: 1; overflow: hidden; }
-        .msg-top { display: flex; justify-content: space-between; margin-bottom: 2px; }
-        .sender-name { font-weight: 600; font-size: 14px; color: var(--outlook-text); }
-        .msg-time { font-size: 12px; color: var(--outlook-blue); }
-        .msg-subject { font-size: 13px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: #000; }
-        .msg-snippet { font-size: 12px; color: var(--outlook-text-secondary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-top: 2px; }
+        .msg-content { flex: 1; min-width: 0; }
+        .msg-top { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 2px; }
+        .msg-sender { font-weight: 700; font-size: 14px; color: #252423; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .msg-time { font-size: 12px; color: var(--outlook-blue); font-weight: 600; flex-shrink: 0; margin-left: 8px; }
+        .msg-item:not(.unread) .msg-sender { font-weight: 400; }
+        .msg-item:not(.unread) .msg-time { color: var(--outlook-text-secondary); font-weight: 400; }
+        .msg-item:not(.unread) .msg-indicator { display: none; }
+        
+        .msg-subject { font-size: 13px; font-weight: 600; color: var(--outlook-blue); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .msg-item:not(.unread) .msg-subject { font-weight: 400; color: #252423; }
+        
+        .msg-snippet { font-size: 13px; color: var(--outlook-text-secondary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-top: 2px; }
 
         /* Reading Pane */
         .reading-pane {
             flex: 1;
             display: flex;
             flex-direction: column;
-            overflow: hidden;
             background: #fff;
+            overflow-y: auto; /* Allow the entire reading pane to scroll */
+            padding: 24px 32px 60px;
         }
-        /* New: Command Bar */
-        .command-bar {
-            height: 44px;
-            border-bottom: 1px solid var(--outlook-border);
+
+        .mail-header { margin-bottom: 32px; }
+        .mail-subject {
+            font-size: 20px; font-weight: 600; color: #252423; margin-bottom: 20px;
+            display: flex; justify-content: space-between; align-items: flex-start; line-height: 1.3;
+        }
+        .mail-actions { display: flex; gap: 16px; color: #605e5c; }
+        .mail-actions span { cursor: pointer; font-size: 16px; }
+
+        .mail-meta { display: flex; justify-content: space-between; align-items: flex-start; }
+        .meta-left { display: flex; gap: 12px; }
+        .meta-avatar {
+            width: 40px; height: 40px; border-radius: 50%; background: #d13438; color: #fff;
+            display: flex; align-items: center; justify-content: center; font-size: 16px; font-weight: 600;
+        }
+        .meta-info { line-height: 1.4; }
+        .meta-name { font-weight: 600; font-size: 14px; color: #252423; }
+        .meta-email { color: #605e5c; font-size: 13px; font-weight: 400; }
+        .meta-to { font-size: 12px; color: #605e5c; margin-top: 2px; }
+        .meta-right { font-size: 12px; color: #605e5c; text-align: right; }
+
+        .mail-body {
+            font-size: 14px;
+            color: #252423;
+            line-height: 1.6;
+        }
+        .mail-body p { margin-bottom: 12px; }
+
+        .external-warning {
+            color: #323130;
+            font-size: 13px;
+            margin-bottom: 24px;
+        }
+
+        /* Stock Table Styles mimicking the image */
+        .stock-report {
+            font-family: 'Consolas', 'Courier New', monospace;
+            font-size: 13px;
+            line-height: 1.5;
+            color: #252423;
+            background: #fff;
+            white-space: pre-wrap;
+            margin-bottom: 24px;
+        }
+        .stock-divider { color: #8a8886; letter-spacing: -0.5px; }
+        .stock-alert { color: #8a2b0e; }
+
+        /* Secret Transcript Container */
+        .secret-log-box {
+            border: 1px solid #c8c6c4;
+            border-radius: 4px;
+            background: #faf9f8;
+            margin: 24px 0;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            max-width: 800px;
+        }
+        .secret-box-header {
+            padding: 8px 12px;
+            background: #f3f2f1;
+            border-bottom: 1px solid #e1dfdd;
             display: flex;
             align-items: center;
-            padding: 0 16px;
-            gap: 20px;
-            background: #fff;
-            flex-shrink: 0;
-        }
-        .command-item {
-            display: flex; align-items: center; gap: 6px;
-            font-size: 13px; cursor: pointer; color: #323130;
-            padding: 4px 8px; border-radius: 4px;
-        }
-        .command-item:hover { background: #f3f2f1; }
-        .command-item .icon { font-size: 16px; opacity: 0.8; }
-
-        .reading-header {
-            padding: 20px 24px;
-            border-bottom: 1px solid var(--outlook-border);
-            background: #fff;
-        }
-        .subject-line {
-            font-size: 18px; font-weight: 600; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: flex-start;
-        }
-        .sender-details { display: flex; gap: 12px; align-items: center; }
-        .sender-fullname { font-weight: 600; font-size: 14px; }
-        .sender-email { color: var(--outlook-text-secondary); font-size: 13px; }
-        .recipient { color: var(--outlook-text-secondary); font-size: 13px; margin-top: 2px; }
-        
-        .reading-body {
-            flex: 1;
-            padding: 0 24px 40px;
-            overflow-y: auto;
-            background: #fff;
-        }
-        .external-warning {
-            background: #fff5f5;
-            border: 1px solid #ffccba;
-            padding: 10px 16px;
-            margin: 20px 0;
+            justify-content: space-between;
             font-size: 12px;
-            color: #323130;
-            border-radius: 2px;
+            color: #605e5c;
+            font-weight: 600;
         }
+        .secret-box-header .file-info { display: flex; align-items: center; gap: 8px; }
+        .secret-box-header .icon { font-size: 16px; }
 
+        /* The scrollable area for subtitles */
         .transcript-content {
-            font-size: 13px;
-            line-height: 1.6;
-            color: #323130;
-            position: relative;
+            height: 200px; /* Small hidden scrolling area */
+            overflow-y: auto;
+            padding: 12px;
+            font-family: 'Consolas', 'Courier New', monospace;
+            font-size: 12px;
+            background: #ffffff;
+            color: #3b3a39;
         }
+        .transcript-content::-webkit-scrollbar { width: 8px; }
+        .transcript-content::-webkit-scrollbar-track { background: transparent; }
+        .transcript-content::-webkit-scrollbar-thumb { background: #c8c6c4; border-radius: 4px; }
+        
         .transcript-line {
-            padding: 6px 10px;
-            border-radius: 4px;
+            padding: 4px 8px;
+            border-radius: 2px;
             cursor: pointer;
             transition: background 0.1s;
             margin-bottom: 2px;
+            display: flex;
         }
         .transcript-line:hover { background: #f3f2f1; }
-        .transcript-line.active { background: #f3f9ff; color: var(--outlook-blue); font-weight: 500; }
+        /* Active line visually looks like a grep match or highlighted log line */
+        .transcript-line.active { background: #fff4ce; color: #8a2b0e; font-weight: 600; }
         .line-ts {
-            font-size: 11px;
             color: #a19f9d;
             margin-right: 12px;
             user-select: none;
-            display: inline-block;
-            width: 45px;
+            flex-shrink: 0;
+            width: 50px;
         }
 
         #audio-player { display: none; }
@@ -275,109 +394,182 @@
 </head>
 <body>
 
+    <!-- Outlook Blue Theme Header -->
     <div class="top-bar">
-        <div class="logo-area">
-            <span style="font-size: 18px;">⠿</span>
-            <span style="font-weight: 600; font-size: 16px;">Outlook</span>
+        <div class="left">
+            <div class="app-launcher"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></div>
+            <div class="title">Outlook</div>
         </div>
-        <div class="search-box"><input type="text" placeholder="Search"></div>
-        <div style="margin-left: auto; display: flex; gap: 20px; align-items: center;">
-            <span title="Meet Now">📹</span> <span title="Chat">💬</span> <span title="Settings">⚙️</span> <span title="Help">❓</span> <span style="background:#5b5fc7; width:30px; height:30px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:12px;">CW</span>
+        <div class="center">
+            <div class="search-box">
+                <svg viewBox="0 0 16 16"><path d="M15.7 14.3l-3.105-3.105A6.966 6.966 0 0014 7c0-3.86-3.14-7-7-7S0 3.14 0 7s3.14 7 7 7c1.745 0 3.345-.64 4.567-1.696l3.125 3.124a.5.5 0 10.708-.707zM7 13c-3.309 0-6-2.691-6-6s2.691-6 6-6 6 2.691 6 6-2.691 6-6 6z"/></svg>
+                <span>Search</span>
+            </div>
+        </div>
+        <div class="right">
+            <div class="icon">📢</div>
+            <div class="icon">⚙️</div>
+            <div class="icon">💡</div>
+            <div class="icon">🔔</div>
+            <div style="width:32px; height:32px; border-radius:50%; border: 2px solid #fff; overflow:hidden;"><img src="https://ui-avatars.com/api/?name=CW&background=5b5fc7&color=fff&size=32" alt="Avatar" width="32"></div>
+        </div>
+    </div>
+
+    <!-- Toolbar separating Folder Pane / Main View -->
+    <div class="app-toolbar">
+        <div class="mini-side-top"><div class="plus-icon">十</div></div>
+        <div class="folder-action-top">
+            <div class="hamburger-icon">≡</div>
+            <button class="new-mail-btn">
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><path d="M13.5 3a1 1 0 011 1v8a1 1 0 01-1 1h-11a1 1 0 01-1-1V5.5l6.5 4.5 6.5-4.5V4a1 1 0 00-1-1h-11z"/><path d="M1.77 4.5l6.23 4.31 6.23-4.31H1.77z"/></svg>
+                New Mail
+            </button>
+        </div>
+        <div class="main-commands">
+            <div class="cmd-group">
+                <div class="cmd-item"><span class="icon">🗑️</span> Delete</div>
+                <div class="cmd-item"><span class="icon">📦</span> Archive</div>
+            </div>
+            <div class="cmd-group">
+                <div class="cmd-item"><span class="icon">📁</span> Move</div>
+                <div class="cmd-item"><span class="icon">🚩</span> Flag ⌄</div>
+                <div class="cmd-item"><span class="icon">✔️</span> Mark Read</div>
+            </div>
+            <div class="cmd-group">
+                <div class="cmd-item"><span class="icon">🔄</span> Sync</div>
+                <div class="cmd-item"><span class="icon">🚫</span> Block</div>
+                <div class="cmd-item">⋯</div>
+            </div>
         </div>
     </div>
 
     <div class="main-layout">
         <!-- Mini Sidebar -->
         <div class="mini-sidebar">
-            <div class="mini-icon active">✉️</div>
-            <div class="mini-icon">📅</div>
-            <div class="mini-icon">👥</div>
-            <div class="mini-icon">📁</div>
-            <div class="mini-icon">✓</div>
-            <div style="margin-top: auto; padding-bottom: 20px;">
-                <div class="mini-icon">📱</div>
-            </div>
+            <div class="mod-icon active">✉️</div>
+            <div class="mod-icon">📅</div>
+            <div class="mod-icon">👥</div>
+            <div class="mod-icon">📁</div>
+            <div class="mod-icon">✓</div>
         </div>
 
         <!-- Folder Pane -->
         <div class="folder-pane">
-            <div class="new-mail-area">
-                <button class="new-mail-btn"><span>➕</span> New Mail</button>
-            </div>
-            
             <div class="folder-tree">
-                <div class="tree-header">⌄ Favorites</div>
-                <div class="tree-node active"><span class="icon">📥</span> Inbox <span class="count">4</span></div>
-                
-                <div style="height: 12px;"></div>
-                
-                <div class="tree-header">⌄ congming.wang@accenture...</div>
-                <div class="tree-node"><span class="icon">📥</span> Inbox</div>
-                <div class="tree-node"><span class="icon">🔒</span> lock</div>
-                <div class="tree-node"><span class="icon">📝</span> Drafts</div>
-                <div class="tree-node"><span class="icon">🕊️</span> Sent</div>
-                <div class="tree-node"><span class="icon">🗑️</span> Deleted Items</div>
-                <div class="tree-node"><span class="icon">📦</span> Archive</div>
-                <div class="tree-node"><span class="icon">💬</span> Conversation History</div>
-                <div class="tree-node"><span class="icon">🚫</span> Junk Email</div>
-                <div class="tree-node"><span class="icon">📡</span> RSS Feeds</div>
-                <div class="tree-node"><span class="icon">📁</span> 禅道</div>
-                
-                <div style="height: 12px;"></div>
-                <div class="tree-header">⌄ Online Archive</div>
-                <div class="tree-node"><span class="icon">📦</span> Archive</div>
-                <div class="tree-node"><span class="icon">🗑️</span> Deleted Items</div>
+                <div class="tree-group">
+                    <div class="tree-header expanded"><span class="arrow">▶</span> Favorites</div>
+                    <div class="tree-item"><span class="icon">📥</span> <span class="name">Inbox</span> <span class="badge">1</span></div>
+                </div>
+
+                <div class="tree-group">
+                    <div class="tree-header expanded"><span class="arrow">▶</span> congming.wang@accenture...</div>
+                    <div class="tree-item active"><span class="icon" style="color:#0078d4">📁</span> <span class="name">狗汪</span> <span class="badge">1</span></div>
+                    <div class="tree-item"><span class="icon">📥</span> <span class="name">Inbox</span></div>
+                    <div class="tree-item"><span class="icon">🔒</span> <span class="name">lock</span></div>
+                    <div class="tree-item"><span class="icon">📝</span> <span class="name">Drafts</span></div>
+                    <div class="tree-item"><span class="icon">✈️</span> <span class="name">Sent</span></div>
+                    <div class="tree-item"><span class="icon">🗑️</span> <span class="name">Deleted Items</span></div>
+                    <div class="tree-item"><span class="icon">📦</span> <span class="name">Archive</span></div>
+                    <div class="tree-item"><span class="icon">💬</span> <span class="name">Conversation History</span></div>
+                    <div class="tree-item"><span class="icon">✉️</span> <span class="name">ignore</span></div>
+                    <div class="tree-item"><span class="icon">🚫</span> <span class="name">Junk Email</span></div>
+                    <div class="tree-item"><span class="icon">📡</span> <span class="name">RSS Feeds</span></div>
+                    <div class="tree-item"><span class="icon">📁</span> <span class="name">禅道</span></div>
+                </div>
+
+                <div class="tree-group">
+                    <div class="tree-header expanded"><span class="arrow">▶</span> Online Archive</div>
+                    <div class="tree-item"><span class="icon">📦</span> <span class="name">Archive</span></div>
+                    <div class="tree-item"><span class="icon">🗑️</span> <span class="name">Deleted Items</span></div>
+                </div>
+
+                <div class="tree-group">
+                    <div class="tree-header"><span class="arrow">▶</span> Saved Searches</div>
+                </div>
             </div>
         </div>
 
         <!-- Message List -->
         <div class="message-list">
-            <div class="list-header">
-                <span>Focused</span>
-                <span style="font-size: 12px; font-weight: normal; color: var(--outlook-blue);">Filter ⌄</span>
+            <div class="list-title-bar">
+                <div class="title" id="folder-title">狗汪</div>
+                <div class="filter">≡</div>
             </div>
             
-            <div class="message-items" id="message-items">
+            <div class="message-items">
                 <!-- Group: Today -->
-                <div class="list-group-header">Today</div>
-                <div id="msg-0" class="message-item active">
-                    <div class="unread-dot"></div>
-                    <div class="avatar" style="background: #d13438">NR</div>
-                    <div class="msg-info">
+                <div class="group-header"><span class="arrow">▶</span> Today</div>
+                <div class="msg-item active unread">
+                    <div class="msg-indicator"></div>
+                    <div class="msg-avatar" style="background:#d13438">Q</div>
+                    <div class="msg-content">
                         <div class="msg-top">
-                            <span class="sender-name">Nayeema Raza</span>
-                            <span class="msg-time">2:45 PM</span>
+                            <span class="msg-sender">1800857@qq.com</span>
+                            <span class="msg-time">14:45</span>
                         </div>
-                        <div class="msg-subject">[External] TED: How to practice curiosity</div>
-                        <div class="msg-snippet">Screens have reshaped our lives in such profound ways...</div>
+                        <div class="msg-subject">[External] 📈 午后股市行情提醒...</div>
+                        <div class="msg-snippet">WARNING: External email. Be v...</div>
+                    </div>
+                </div>
+                <div class="msg-item">
+                    <div class="msg-avatar" style="background:#d13438">Q</div>
+                    <div class="msg-content">
+                        <div class="msg-top">
+                            <span class="msg-sender">1800857@qq.com</span>
+                            <span class="msg-time">08:08</span>
+                        </div>
+                        <div class="msg-subject">[External] 📰 每日事件通报...</div>
+                        <div class="msg-snippet">WARNING: External email. Be v...</div>
                     </div>
                 </div>
 
                 <!-- Group: Yesterday -->
-                <div class="list-group-header">Yesterday</div>
-                <div class="message-item">
-                    <div class="avatar" style="background: #0078d4">IT</div>
-                    <div class="msg-info">
+                <div class="group-header"><span class="arrow">▶</span> Yesterday</div>
+                <div class="msg-item">
+                    <div class="msg-avatar" style="background:#d13438">Q</div>
+                    <div class="msg-content">
                         <div class="msg-top">
-                            <span class="sender-name">IT Support</span>
+                            <span class="msg-sender">1800857@qq.com</span>
                             <span class="msg-time">Yesterday</span>
                         </div>
-                        <div class="msg-subject">System Maintenance Notice</div>
-                        <div class="msg-snippet">Planned downtime for internal systems on March 15th...</div>
+                        <div class="msg-subject">[External] 📈 午后股市行情提醒...</div>
+                        <div class="msg-snippet">WARNING: External email. Be v...</div>
+                    </div>
+                </div>
+                <div class="msg-item">
+                    <div class="msg-avatar" style="background:#d13438">Q</div>
+                    <div class="msg-content">
+                        <div class="msg-top">
+                            <span class="msg-sender">1800857@qq.com</span>
+                            <span class="msg-time">Yesterday</span>
+                        </div>
+                        <div class="msg-subject">[External] 📰 每日事件通报...</div>
+                        <div class="msg-snippet">WARNING: External email. Be v...</div>
                     </div>
                 </div>
 
                 <!-- Group: This Week -->
-                <div class="list-group-header">This Week</div>
-                <div class="message-item">
-                    <div class="avatar" style="background: #107c10">HR</div>
-                    <div class="msg-info">
+                <div class="group-header"><span class="arrow">▶</span> This Week</div>
+                <div class="msg-item">
+                    <div class="msg-avatar" style="background:#d13438">Q</div>
+                    <div class="msg-content">
                         <div class="msg-top">
-                            <span class="sender-name">HR Portal</span>
-                            <span class="msg-time">Mar 11</span>
+                            <span class="msg-sender">1800857@qq.com</span>
+                            <span class="msg-time">2026/3/11</span>
                         </div>
-                        <div class="msg-subject">Benefits Enrollment Open</div>
-                        <div class="msg-snippet">Please complete your annual benefits selection by Friday...</div>
+                        <div class="msg-subject">[External] 📰 每日事件通报...</div>
+                        <div class="msg-snippet">WARNING: External email. Be v...</div>
+                    </div>
+                </div>
+                <div class="msg-item">
+                    <div class="msg-avatar" style="background:#d13438">Q</div>
+                    <div class="msg-content">
+                        <div class="msg-top">
+                            <span class="msg-sender">1800857@qq.com</span>
+                            <span class="msg-time">2026/3/10</span>
+                        </div>
+                        <div class="msg-subject">[External] 📺 B站热门视频推送...</div>
+                        <div class="msg-snippet">WARNING: External email. Be v...</div>
                     </div>
                 </div>
             </div>
@@ -385,51 +577,92 @@
 
         <!-- Reading Pane -->
         <div class="reading-pane">
-            <!-- Command Bar -->
-            <div class="command-bar">
-                <div class="command-item"><span class="icon">🗑️</span> Delete</div>
-                <div class="command-item"><span class="icon">📦</span> Archive</div>
-                <div class="command-item"><span class="icon">🚫</span> Junk</div>
-                <div class="command-item"><span class="icon">🧹</span> Sweep</div>
-                <div class="command-item"><span class="icon">📂</span> Move to</div>
-                <div class="command-item">⋯</div>
-            </div>
-
-            <div class="reading-header">
-                <div class="subject-line">
-                    <span id="display-subject">[External] TED: How to practice curiosity</span>
-                    <div style="font-size: 16px; color: var(--outlook-text-secondary); display: flex; gap: 20px;">
-                        <span>↩️ Reply</span> <span>🔁 Reply All</span> <span>→ Forward</span>
+            <div class="mail-header">
+                <div class="mail-subject">
+                    <span id="display-subject">[External] 📈 午后股市行情提醒 2026-03-13</span>
+                    <div class="mail-actions">
+                        <span>😀</span> <span>↩️</span> <span>🔁</span> <span>→</span> <span>⋯</span>
                     </div>
                 </div>
-                <div class="sender-details">
-                    <div class="avatar" style="background:#d13438">NR</div>
-                    <div class="sender-text">
-                        <div class="sender-fullname">Nayeema Raza</div>
-                        <div class="sender-email">1800857@qq.com <span style="margin-left: 8px; color: var(--outlook-blue);">Add to favorites</span></div>
-                        <div class="recipient">To: wang.congming@accenture.com</div>
+                <div class="mail-meta">
+                    <div class="meta-left">
+                        <div class="meta-avatar">Q</div>
+                        <div class="meta-info">
+                            <div class="meta-name">1800857@qq.com <span class="meta-email">&lt;1800857@qq.com&gt;</span></div>
+                            <div class="meta-to">To: 👤 Wang, Congming</div>
+                        </div>
+                    </div>
+                    <div class="meta-right">
+                        Today at 14:45
                     </div>
                 </div>
             </div>
 
-            <div class="reading-body">
+            <div class="mail-body">
                 <div class="external-warning">
-                    <strong>WARNING:</strong> External email. Be vigilant with links, attachments, and requests.
+                    WARNING: External email. Be vigilant with links, attachments, and requests.
                 </div>
 
-                <div style="font-size: 14px; color: #323130; margin-bottom: 24px; line-height: 1.5; max-width: 800px;">
-                    <p style="margin-bottom: 12px;">Hi Team,</p>
-                    <p style="margin-bottom: 12px;">Attached is the requested communication log for your review. Please note the timestamps and verify the content against our internal records. If you spot any discrepancies, let me know.</p>
-                    <p style="margin-bottom: 12px;">Best regards,<br>Nayeema</p>
+                <div class="stock-report">
+<span class="stock-divider">========================================================================</span>
+    📈 午后股市行情提醒
+    日期：2026 年 3 月 13 日 （周五）
+    时间：14:40 (北京时间)
+<span class="stock-divider">========================================================================</span>
+
+<span class="stock-alert">⚠️ 免责声明：本报告仅供参考，不构成投资建议。市场有风险，投资需谨慎。</span>
+
+<span class="stock-divider">========================================================================</span>
+一、A股大盘行情
+<span class="stock-divider">========================================================================</span>
+
+| 指数       | 当前点   | 昨收点   | 涨跌幅  | 涨跌额 | 成交额   |
+|------------|----------|----------|--------|--------|----------|
+| 上证指数   | 4093.03  | 4117.57  | -0.60% | -24.54 | 9693 亿元|
+| 深证成指   | 14265.14 | 14300.92 | -0.25% | -35.78 | 12181 亿元|
+| 创业板指   | 3305.49  | 3296.50  | +0.27% | +8.99  | 5269 亿元|
+
+📊 大盘分析：
+• 上证指数：低开低走，跌破 4100 点关口，成交量萎缩
+• 深证成指：窄幅震荡，小幅收跌
+• 创业板指：逆势翻红，表现相对强势
+
+💰 资金流向：
+• 沪市成交量：7.25 亿手，成交额 9693 亿元
+• 深市成交量：7.05 亿手，成交额 12181 亿元
+• 整体市场成交量较昨日略有萎缩
+
+<span class="stock-divider">========================================================================</span>
+二、监控组件心跳日志反馈 (附件嵌入)
+<span class="stock-divider">========================================================================</span>
                 </div>
 
-                <div style="border: 1px solid var(--outlook-border); border-radius: 4px; background: #faf9f8; max-width: 800px;">
-                    <div style="padding: 10px 16px; border-bottom: 1px solid var(--outlook-border); font-size: 13px; font-weight: 600; color: #605e5c; display: flex; align-items: center; gap: 8px; background: #fff; border-radius: 4px 4px 0 0;">
-                        <span style="font-size: 16px;">📄</span> <span>communication_log_export.txt</span> <span style="margin-left:auto; font-weight: normal; font-size: 12px;">2.4 MB</span>
+                <!-- Hidden audio transcript inside the email body -->
+                <div class="secret-log-box" title="Scroll to read logs">
+                    <div class="secret-box-header">
+                        <div class="file-info"><span class="icon">📋</span> log_output_stream.txt</div>
+                        <div style="font-weight:normal;">[LIVE TAIL]</div>
                     </div>
-                    <div class="transcript-content" id="transcript-content" style="height: 320px; overflow-y: auto; padding: 12px; font-size: 13px;">
-                        <!-- Transcription goes here -->
+                    <div class="transcript-content" id="transcript-content">
+                        <!-- Transcription lines -->
                     </div>
+                </div>
+
+                <div class="stock-report">
+<span class="stock-divider">========================================================================</span>
+三、黄金板块行情
+<span class="stock-divider">========================================================================</span>
+
+| 品种       | 当前价   | 昨收价   | 涨跌额 | 涨跌幅 |
+|------------|----------|----------|--------|--------|
+| 黄金 ETF   | 10.81    | 10.85    | -0.04  | -0.41% |
+| 山东黄金   | 46.37    | 46.56    | -0.19  | -0.41% |
+| 中金黄金   | 30.73    | 30.88    | -0.15  | -0.49% |
+
+📉 技术面分析：
+• 支撑位：黄金 ETF 10.70 / 山东黄金 45.50
+• 压力位：黄金 ETF 10.95 / 山东黄金 47.50
+• 国际金价今日小幅回调，美元指数走强压制金价
                 </div>
             </div>
         </div>
@@ -438,21 +671,15 @@
     <audio id="audio-player"></audio>
 
     <script>
-    const episodes = [
-        {
-            title: "[External] TED: How to practice curiosity",
-            sender: "Nayeema Raza",
-            initial: "NR",
-            mp3: "ted_curiosity.mp3",
-            vtt: "ted_curiosity.vtt",
-            snippet: "Attached is the requested communication log for your review..."
-        }
-    ];
+    const episode = {
+        title: "[External] 📈 午后股市行情提醒 2026-03-13",
+        mp3: "ted_curiosity.mp3",
+        vtt: "ted_curiosity.vtt"
+    };
 
     const audio = document.getElementById('audio-player');
     audio.volume = 1.0;
     const container = document.getElementById('transcript-content');
-    const subjectEl = document.getElementById('display-subject');
 
     let currentCues = [];
     let currentLineIndex = -1;
@@ -487,9 +714,8 @@
     }
 
     function formatTs(secs) {
-        let m = Math.floor(secs / 60);
-        let s = Math.floor(secs % 60);
-        return String(m).padStart(2,'0') + ':' + String(s).padStart(2,'0');
+        let d = new Date(secs * 1000).toISOString().substr(11, 8);
+        return d.startsWith('00:') ? d.substr(3) : d;
     }
 
     function renderCues() {
@@ -498,7 +724,7 @@
             let div = document.createElement('div');
             div.className = 'transcript-line';
             div.id = 'cue-' + i;
-            div.innerHTML = `<span class="line-ts">${formatTs(cue.start)}</span>${cue.text}`;
+            div.innerHTML = `<span class="line-ts">[${formatTs(cue.start)}]</span> ${cue.text}`;
             div.onclick = () => {
                 audio.currentTime = cue.start;
                 if (audio.paused) audio.play();
@@ -507,14 +733,11 @@
         });
     }
 
-    function loadEpisode(index) {
-        const ep = episodes[index];
-        audio.src = ep.mp3;
+    function loadEpisode() {
+        audio.src = episode.mp3;
         audio.load();
-        currentLineIndex = -1;
-        subjectEl.textContent = ep.title;
-
-        fetch(ep.vtt)
+        
+        fetch(episode.vtt)
             .then(r => r.text())
             .then(text => {
                 currentCues = parseVTT(text);
@@ -522,6 +745,7 @@
             });
     }
 
+    // Scroll transcript box securely
     audio.addEventListener('timeupdate', () => {
         if (!currentCues.length) return;
         const t = audio.currentTime;
@@ -540,19 +764,24 @@
         let el = document.getElementById('cue-' + index);
         if (el) {
             el.classList.add('active');
-            const targetPos = el.offsetTop - (container.clientHeight / 2) + 15;
+            // Auto scroll container so current line is in view
+            const targetPos = el.offsetTop - (container.clientHeight / 2) + 10;
             container.scrollTo({ top: targetPos, behavior: 'smooth' });
         }
     }
 
+    // Hotkeys
     document.addEventListener('keydown', e => {
         if (e.target.tagName === 'INPUT' || e.target.tagName === 'SELECT' || e.target.tagName === 'TEXTAREA') return;
-        if (e.code === 'Space') { e.preventDefault(); audio.paused ? audio.play() : audio.pause(); }
+        if (e.code === 'Space') { 
+            e.preventDefault(); 
+            audio.paused ? audio.play() : audio.pause(); 
+        }
         else if (e.code === 'ArrowRight') { audio.currentTime += 5; }
         else if (e.code === 'ArrowLeft') { audio.currentTime -= 5; }
     });
 
-    loadEpisode(0);
+    loadEpisode();
     </script>
 </body>
 </html>

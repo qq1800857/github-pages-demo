@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>云服务器 ECS 控制台 - 阿里云</title>
+    <style>
+        * { margin:0; padding:0; box-sizing:border-box; }
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; background: #f2f3f7; color: #333; height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
+        
+        /* Top Navigation */
+        .top-nav { height: 50px; background: #232a35; color: #fff; display: flex; align-items: center; padding: 0 20px; flex-shrink: 0; justify-content: space-between; font-size: 14px; }
+        .top-left { display: flex; align-items: center; gap: 20px; }
+        .logo { font-size: 16px; font-weight: 600; font-style: italic; letter-spacing: 1px; }
+        .top-menu { display: flex; gap: 16px; color: #c3c5c6; cursor: pointer; }
+        .top-menu span:hover { color: #fff; }
+        
+        .top-search { flex: 1; max-width: 400px; margin: 0 40px; position: relative; }
+        .top-search input { width: 100%; height: 28px; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); border-radius: 2px; padding: 0 10px; color: #fff; font-size: 12px; }
+        
+        .top-right { display: flex; align-items: center; gap: 20px; color: #c3c5c6; font-size: 12px; }
+        .avatar { width: 24px; height: 24px; border-radius: 50%; background: #0070cc; display: flex; align-items: center; justify-content: center; color: #fff; font-weight: bold; }
+        
+        /* Main Container */
+        .main-container { flex: 1; display: flex; overflow: hidden; }
+        
+        /* Left Sidebar */
+        .sidebar { width: 200px; background: #333744; color: #aeb9c2; flex-shrink: 0; display: flex; flex-direction: column; font-size: 12px; }
+        .sidebar-header { height: 40px; display: flex; align-items: center; padding: 0 16px; background: #2b303b; font-weight: bold; color: #fff; border-bottom: 1px solid #1e222d; cursor: pointer; }
+        .menu-title { padding: 12px 16px 8px; font-size: 12px; color: #76818e; }
+        .menu-item { padding: 10px 16px 10px 32px; cursor: pointer; transition: background 0.2s; display: flex; align-items: center; gap: 8px; }
+        .menu-item:hover { background: #2c313c; color: #fff; }
+        .menu-item.active { background: #00c1de; color: #fff; font-weight: bold; }
+        
+        /* Content Area */
+        .content { flex: 1; display: flex; flex-direction: column; background: #f2f3f7; overflow: hidden; }
+        
+        /* Breadcrumb & Header */
+        .page-header { background: #fff; padding: 16px 20px; border-bottom: 1px solid #e1e6eb; flex-shrink: 0; }
+        .breadcrumb { font-size: 12px; color: #666; margin-bottom: 8px; }
+        .page-title { font-size: 20px; font-weight: 500; color: #111; display: flex; align-items: center; gap: 12px; }
+        .status-badge { background: #ebfaeb; color: #00a854; border: 1px solid #b7edb7; padding: 2px 8px; border-radius: 2px; font-size: 12px; font-weight: normal; }
+        
+        /* Dashboard / Log Area */
+        .dashboard { flex: 1; padding: 20px; overflow-y: auto; }
+        
+        .panel { background: #fff; border-radius: 2px; border: 1px solid #e1e6eb; margin-bottom: 20px; display: flex; flex-direction: column; }
+        .panel-header { padding: 12px 20px; border-bottom: 1px solid #e1e6eb; font-weight: 500; font-size: 14px; display: flex; justify-content: space-between; }
+        .panel-header button { background: #fff; border: 1px solid #c4c6cf; padding: 4px 12px; font-size: 12px; border-radius: 2px; cursor: pointer; color: #333; }
+        
+        /* Info Grid */
+        .info-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; padding: 20px; font-size: 12px; border-bottom: 1px solid #e1e6eb; }
+        .info-item { display: flex; flex-direction: column; gap: 6px; }
+        .info-label { color: #888; }
+        .info-val { color: #333; font-weight: 500; }
+        
+        /* Terminal / Log Output */
+        .terminal { background: #1e1e1e; border-top: 1px solid #e1e6eb; flex: 1; display: flex; flex-direction: column; height: 500px; }
+        .term-header { background: #2d2d2d; padding: 8px 16px; color: #a5a5a5; font-size: 12px; border-bottom: 1px solid #000; display: flex; gap: 16px; font-family: 'Consolas', monospace; }
+        .term-body { flex: 1; padding: 12px 16px; overflow-y: auto; font-family: 'Consolas', 'Courier New', monospace; font-size: 13px; line-height: 1.6; color: #d4d4d4; }
+        
+        .log-line { display: flex; margin-bottom: 2px; cursor: pointer; border-left: 2px solid transparent; padding-left: 8px;}
+        .log-line:hover { background: rgba(255,255,255,0.05); }
+        .log-line.active { background: rgba(0, 193, 222, 0.15); border-left: 2px solid #00c1de; color: #fff; }
+        
+        .timestamp { color: #569cd6; width: 140px; flex-shrink: 0; user-select: none; }
+        .level { color: #4ec9b0; width: 50px; flex-shrink: 0; user-select: none; }
+        .active .level { color: #57d9a3; font-weight: bold; }
+        .msg { flex: 1; word-wrap: break-word; }
+        
+        #audio-player { display: none; }
+    </style>
+</head>
+<body>
+
+    <div class="top-nav">
+        <div class="top-left">
+            <div class="logo">[-] Alibaba Cloud</div>
+            <div class="top-menu">
+                <span>云服务器 ECS</span>
+                <span>轻量应用服务器</span>
+                <span>云监控</span>
+            </div>
+        </div>
+        <div class="top-search">
+            <input type="text" placeholder="搜索资源、产品、服务、文档等，支持多条件筛选">
+        </div>
+        <div class="top-right">
+            <span>费用</span>
+            <span>工单</span>
+            <span>华北 2 (北京)</span>
+            <span>简体中文</span>
+            <div class="avatar">C</div>
+        </div>
+    </div>
+
+    <div class="main-container">
+        <!-- Sidebar -->
+        <div class="sidebar">
+            <div class="sidebar-header">云服务器 ECS</div>
+            <div class="menu-title">实例与镜像</div>
+            <div class="menu-item active">实例</div>
+            <div class="menu-item">专属宿主机</div>
+            <div class="menu-item">镜像</div>
+            
+            <div class="menu-title">网络与安全</div>
+            <div class="menu-item">安全组</div>
+            <div class="menu-item">弹性网卡</div>
+            
+            <div class="menu-title">存储与快照</div>
+            <div class="menu-item">云盘</div>
+            <div class="menu-item">快照</div>
+            
+            <div class="menu-title">运维与监控</div>
+            <div class="menu-item">云助手</div>
+            <div class="menu-item">事件</div>
+            <div class="menu-item">会话管理 (Terminal)</div>
+            <div class="menu-item">自助问题排查</div>
+        </div>
+
+        <!-- Content -->
+        <div class="content">
+            <div class="page-header">
+                <div class="breadcrumb">云服务器 ECS > 实例与镜像 > 实例 > i-bp1a2b3c4d5e6f7g8h9i</div>
+                <div class="page-title">
+                    i-bp1a2b3c4d5e6f7g8h9i (生产环境-后台应用-主节点)
+                    <span class="status-badge">运行中</span>
+                </div>
+            </div>
+
+            <div class="dashboard">
+                <div class="panel">
+                    <div class="panel-header">
+                        <span>实例详情</span>
+                        <button>更多操作</button>
+                    </div>
+                    <div class="info-grid">
+                        <div class="info-item">
+                            <span class="info-label">实例 ID</span>
+                            <span class="info-val">i-bp1a2b3c4d5e...</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">地域</span>
+                            <span class="info-val">华北 2 (北京) 可用区 G</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">实例规格</span>
+                            <span class="info-val">ecs.g6.xlarge (4 vCPU 16 GiB)</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">公网 IP</span>
+                            <span class="info-val">121.43.21.99</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">私有 IP</span>
+                            <span class="info-val">172.16.89.123</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">操作系统</span>
+                            <span class="info-val">Alibaba Cloud Linux 3.2</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">安全组</span>
+                            <span class="info-val">sg-pro-backend-allow-all</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">网络类型</span>
+                            <span class="info-val">专有网络 VPC</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="panel">
+                    <div class="panel-header">
+                        <span>系统实时日志 / systemd-journald</span>
+                        <div style="display:flex; gap:10px;">
+                            <button>⏸ 暂停滚动</button>
+                            <button>⏬ 导出全部日志</button>
+                        </div>
+                    </div>
+                    
+                    <div class="terminal">
+                        <div class="term-header">
+                            <span>[root@i-bp1a2b ~]# tail -f /var/log/syslog | grep "TED-worker"</span>
+                        </div>
+                        <div class="term-body" id="transcript-content">
+                            <!-- Transcription lines injected here -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <audio id="audio-player"></audio>
+
+    <script>
+    const episode = {
+        title: "TED: How to practice curiosity",
+        mp3: "ted_curiosity.mp3",
+        vtt: "ted_curiosity.vtt"
+    };
+
+    const audio = document.getElementById('audio-player');
+    audio.volume = 1.0;
+    const container = document.getElementById('transcript-content');
+
+    let currentCues = [];
+    let currentLineIndex = -1;
+
+    // Generate a realistic base timestamp for the logs
+    const baseDate = new Date();
+    baseDate.setHours(baseDate.getHours() - 1); // 1 hour ago
+
+    function parseTime(s) {
+        let p = s.trim().split(':');
+        let secs = 0;
+        if (p.length === 3) { secs += parseInt(p[0])*3600 + parseInt(p[1])*60 + parseFloat(p[2]); }
+        else if (p.length === 2) { secs += parseInt(p[0])*60 + parseFloat(p[1]); }
+        return secs;
+    }
+
+    function parseVTT(text) {
+        const lines = text.split(/\r?\n/);
+        const cues = [];
+        let i = 0;
+        while (i < lines.length) {
+            if (lines[i].includes('-->')) {
+                let times = lines[i].split('-->');
+                let start = parseTime(times[0]);
+                let end = parseTime(times[1]);
+                i++;
+                let t = "";
+                while (i < lines.length && lines[i].trim() !== "" && !lines[i].includes('-->')) {
+                    t += lines[i] + " ";
+                    i++;
+                }
+                cues.push({ start, end, text: t.trim() });
+            } else { i++; }
+        }
+        return cues;
+    }
+
+    function formatLogTs(secs) {
+        const d = new Date(baseDate.getTime() + secs * 1000);
+        const yyyy = d.getFullYear();
+        const mm = String(d.getMonth() + 1).padStart(2, '0');
+        const dd = String(d.getDate()).padStart(2, '0');
+        const h = String(d.getHours()).padStart(2, '0');
+        const min = String(d.getMinutes()).padStart(2, '0');
+        const s = String(d.getSeconds()).padStart(2, '0');
+        const ms = String(Math.floor(Math.random() * 999)).padStart(3, '0');
+        return `${yyyy}-${mm}-${dd} ${h}:${min}:${s}.${ms}`;
+    }
+
+    function renderCues() {
+        container.innerHTML = '';
+        currentCues.forEach((cue, i) => {
+            let div = document.createElement('div');
+            div.className = 'log-line';
+            div.id = 'cue-' + i;
+            div.innerHTML = `
+                <span class="timestamp">${formatLogTs(cue.start)}</span>
+                <span class="level">[INFO]</span>
+                <span class="msg">{"worker":"TED-sys","msg":"${cue.text.replace(/"/g, '\\"')}"}</span>
+            `;
+            div.onclick = () => {
+                audio.currentTime = cue.start;
+                if (audio.paused) audio.play();
+            };
+            container.appendChild(div);
+        });
+    }
+
+    function loadEpisode() {
+        audio.src = episode.mp3;
+        audio.load();
+        
+        fetch(episode.vtt)
+            .then(r => r.text())
+            .then(text => {
+                currentCues = parseVTT(text);
+                renderCues();
+            });
+    }
+
+    audio.addEventListener('timeupdate', () => {
+        if (!currentCues.length) return;
+        const t = audio.currentTime;
+        let active = -1;
+        for (let i = 0; i < currentCues.length; i++) {
+            if (t >= currentCues[i].start && t <= currentCues[i].end + 0.3) { active = i; break; }
+        }
+        if (active !== -1 && active !== currentLineIndex) {
+            highlight(active);
+        }
+    });
+
+    function highlight(index) {
+        document.querySelectorAll('.log-line.active').forEach(e => e.classList.remove('active'));
+        currentLineIndex = index;
+        let el = document.getElementById('cue-' + index);
+        if (el) {
+            el.classList.add('active');
+            const targetPos = el.offsetTop - (container.clientHeight / 2) + 20;
+            container.scrollTo({ top: targetPos, behavior: 'smooth' });
+        }
+    }
+
+    document.addEventListener('keydown', e => {
+        if (e.target.tagName === 'INPUT' || e.target.tagName === 'SELECT' || e.target.tagName === 'TEXTAREA') return;
+        if (e.code === 'Space') { 
+            e.preventDefault(); 
+            audio.paused ? audio.play() : audio.pause(); 
+        }
+        else if (e.code === 'ArrowRight') { audio.currentTime += 5; }
+        else if (e.code === 'ArrowLeft') { audio.currentTime -= 5; }
+    });
+
+    loadEpisode();
+
+    // Fake log stream effect
+    setInterval(() => {
+        if (Math.random() > 0.8 && container.scrollHeight > container.clientHeight && audio.paused) {
+            // Randomly scroll if paused to look like active terminal
+            const target = container.scrollTop + (Math.random() > 0.5 ? 20 : -20);
+            container.scrollTo({ top: target, behavior: 'smooth' });
+        }
+    }, 3000);
+    </script>
+</body>
+</html>
