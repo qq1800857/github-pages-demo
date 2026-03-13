@@ -113,7 +113,7 @@
 
         .folder-tree { padding: 0 8px; }
         .tree-header {
-            padding: 8px 12px;
+            padding: 8px 12px 8px 4px;
             font-weight: 600;
             display: flex; align-items: center; gap: 8px;
             cursor: pointer;
@@ -121,7 +121,7 @@
         }
         .tree-header:hover { background: #e1dfdd; }
         .tree-node {
-            padding: 6px 12px 6px 32px;
+            padding: 6px 12px 6px 20px;
             font-size: 13px;
             display: flex; align-items: center; justify-content: space-between;
             cursor: pointer;
@@ -247,10 +247,10 @@
         }
 
         .transcript-content {
-            font-size: 14px;
+            font-size: 13px;
             line-height: 1.6;
             color: #323130;
-            max-width: 800px;
+            position: relative;
         }
         .transcript-line {
             padding: 6px 10px;
@@ -417,8 +417,19 @@
                     <strong>WARNING:</strong> External email. Be vigilant with links, attachments, and requests.
                 </div>
 
-                <div class="transcript-content" id="transcript-content">
-                    <!-- Transcription goes here -->
+                <div style="font-size: 14px; color: #323130; margin-bottom: 24px; line-height: 1.5; max-width: 800px;">
+                    <p style="margin-bottom: 12px;">Hi Team,</p>
+                    <p style="margin-bottom: 12px;">Attached is the requested communication log for your review. Please note the timestamps and verify the content against our internal records. If you spot any discrepancies, let me know.</p>
+                    <p style="margin-bottom: 12px;">Best regards,<br>Nayeema</p>
+                </div>
+
+                <div style="border: 1px solid var(--outlook-border); border-radius: 4px; background: #faf9f8; max-width: 800px;">
+                    <div style="padding: 10px 16px; border-bottom: 1px solid var(--outlook-border); font-size: 13px; font-weight: 600; color: #605e5c; display: flex; align-items: center; gap: 8px; background: #fff; border-radius: 4px 4px 0 0;">
+                        <span style="font-size: 16px;">📄</span> <span>communication_log_export.txt</span> <span style="margin-left:auto; font-weight: normal; font-size: 12px;">2.4 MB</span>
+                    </div>
+                    <div class="transcript-content" id="transcript-content" style="height: 320px; overflow-y: auto; padding: 12px; font-size: 13px;">
+                        <!-- Transcription goes here -->
+                    </div>
                 </div>
             </div>
         </div>
@@ -434,11 +445,12 @@
             initial: "NR",
             mp3: "ted_curiosity.mp3",
             vtt: "ted_curiosity.vtt",
-            snippet: "Screens have reshaped our lives in such profound ways..."
+            snippet: "Attached is the requested communication log for your review..."
         }
     ];
 
     const audio = document.getElementById('audio-player');
+    audio.volume = 1.0;
     const container = document.getElementById('transcript-content');
     const subjectEl = document.getElementById('display-subject');
 
@@ -528,9 +540,8 @@
         let el = document.getElementById('cue-' + index);
         if (el) {
             el.classList.add('active');
-            const wrapper = document.querySelector('.reading-body');
-            const targetPos = el.offsetTop - 150;
-            wrapper.scrollTo({ top: targetPos, behavior: 'smooth' });
+            const targetPos = el.offsetTop - (container.clientHeight / 2) + 15;
+            container.scrollTo({ top: targetPos, behavior: 'smooth' });
         }
     }
 
