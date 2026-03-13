@@ -3,197 +3,184 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Confluence - Meeting Notes</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <title>Meeting | Microsoft Teams</title>
+    <link href="https://fonts.googleapis.com/css2?family=Segoe+UI:wght@400;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
     <style>
         * { margin:0; padding:0; box-sizing:border-box; }
         :root {
-            --bg: #ffffff;
-            --sidebar-bg: #f4f5f7;
-            --border: #dfe1e6;
-            --text: #172b4d;
-            --text-light: #6b778c;
-            --blue: #0052cc;
-            --blue-light: #deebff;
-            --purple: #6554c0;
+            --teams-purple: #464775;
+            --teams-bg: #f5f5f5;
+            --teams-sidebar: #ebebeb;
+            --teams-text: #242424;
+            --teams-text-secondary: #616161;
+            --teams-border: #e1e1e1;
+            --teams-active-blue: #5b5fc7;
         }
         body {
-            font-family: 'Inter', -apple-system, sans-serif;
-            background: var(--bg);
-            color: var(--text);
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            background: var(--teams-bg);
+            color: var(--teams-text);
             display: flex;
             height: 100vh;
             overflow: hidden;
         }
 
-        /* Sidebar - fake Confluence nav */
-        .sidebar {
-            width: 260px;
-            background: var(--sidebar-bg);
-            border-right: 1px solid var(--border);
+        /* App Sidebar */
+        .app-sidebar {
+            width: 68px;
+            background: var(--teams-sidebar);
+            border-right: 1px solid var(--teams-border);
             display: flex;
             flex-direction: column;
+            align-items: center;
+            padding-top: 15px;
             flex-shrink: 0;
         }
-        .sidebar-header {
-            padding: 16px 20px;
-            border-bottom: 1px solid var(--border);
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-        .sidebar-logo {
-            width: 28px; height: 28px;
-            background: linear-gradient(135deg, #0052cc, #2684ff);
-            border-radius: 6px;
-            display: flex; align-items: center; justify-content: center;
-            color: #fff; font-weight: 700; font-size: 14px;
-        }
-        .sidebar-title { font-size: 14px; font-weight: 600; }
-        .sidebar-section { padding: 12px 0; }
-        .sidebar-section-title {
-            padding: 4px 20px;
-            font-size: 11px;
-            font-weight: 600;
-            color: var(--text-light);
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
-        }
-        .sidebar-item {
-            padding: 6px 20px 6px 28px;
-            font-size: 14px;
-            color: var(--text);
+        .app-icon {
+            width: 40px; height: 40px;
+            margin-bottom: 20px;
+            display: flex; flex-direction: column; align-items: center;
             cursor: pointer;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            transition: background 0.15s;
+            color: var(--teams-text-secondary);
         }
-        .sidebar-item:hover { background: #ebecf0; }
-        .sidebar-item.active { background: var(--blue-light); color: var(--blue); font-weight: 500; }
-        .sidebar-item .icon { font-size: 16px; opacity: 0.7; }
+        .app-icon svg { width: 24px; height: 24px; margin-bottom: 4px; }
+        .app-icon span { font-size: 10px; }
+        .app-icon.active { color: var(--teams-active-blue); }
 
-        /* Episode Selector disguised as page tree */
-        #episode-select {
-            width: calc(100% - 40px);
-            margin: 8px 20px;
-            padding: 6px 8px;
-            border: 1px solid var(--border);
-            border-radius: 4px;
-            font-size: 13px;
-            color: var(--text);
-            background: #fff;
-            cursor: pointer;
-            outline: none;
-        }
-
-        /* Main Content Area */
-        .main {
+        /* Content Area */
+        .main-container {
             flex: 1;
             display: flex;
             flex-direction: column;
-            overflow: hidden;
+            background: #fff;
         }
-        .topbar {
-            padding: 12px 32px;
-            border-bottom: 1px solid var(--border);
+
+        /* Top Header */
+        .header {
+            height: 48px;
+            border-bottom: 1px solid var(--teams-border);
             display: flex;
             align-items: center;
+            padding: 0 20px;
             justify-content: space-between;
-            background: var(--bg);
         }
-        .breadcrumb {
-            font-size: 13px;
-            color: var(--text-light);
-        }
-        .breadcrumb a { color: var(--blue); text-decoration: none; }
-        .topbar-actions {
-            display: flex; gap: 12px;
-        }
-        .btn-small {
-            padding: 4px 12px;
-            border: 1px solid var(--border);
-            border-radius: 4px;
-            font-size: 12px;
-            color: var(--text-light);
-            background: none;
-            cursor: pointer;
-        }
-        .btn-small:hover { background: var(--sidebar-bg); }
+        .header-left { display: flex; align-items: center; gap: 15px; }
+        .back-btn { font-size: 20px; cursor: pointer; color: var(--teams-text-secondary); }
+        .meeting-title { font-size: 16px; font-weight: 600; }
 
-        .content {
+        /* Tabs */
+        .tabs {
+            display: flex;
+            padding-left: 20px;
+            border-bottom: 1px solid var(--teams-border);
+        }
+        .tab {
+            padding: 12px 16px;
+            font-size: 14px;
+            cursor: pointer;
+            color: var(--teams-text-secondary);
+            border-bottom: 2px solid transparent;
+        }
+        .tab.active {
+            color: var(--teams-active-blue);
+            border-bottom-color: var(--teams-active-blue);
+            font-weight: 600;
+        }
+
+        /* Main View Split */
+        .view-content {
+            flex: 1;
+            display: flex;
+            overflow: hidden;
+        }
+
+        /* Left side: Video/Logo placeholder */
+        .video-area {
+            flex: 1;
+            background: #111;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+        .video-placeholder {
+            width: 120px; height: 120px;
+            background: var(--teams-active-blue);
+            border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            color: #fff; font-size: 48px; font-weight: 600;
+        }
+        .meeting-controls {
+            position: absolute; bottom: 20px; left: 50%;
+            transform: translateX(-50%);
+            background: rgba(36,36,36,0.85);
+            padding: 8px 16px;
+            border-radius: 8px;
+            display: flex; gap: 15px;
+        }
+        .control-btn {
+            background: none; border: none; color: #fff;
+            cursor: pointer; display: flex; flex-direction: column;
+            align-items: center; gap: 4px; font-size: 10px;
+        }
+
+        /* Right side: Transcript */
+        .transcript-area {
+            width: 360px;
+            border-left: 1px solid var(--teams-border);
+            display: flex;
+            flex-direction: column;
+            background: #fafafa;
+        }
+        .transcript-header {
+            padding: 16px;
+            border-bottom: 1px solid var(--teams-border);
+            font-size: 14px; font-weight: 600;
+            display: flex; justify-content: space-between;
+        }
+        .transcript-content {
             flex: 1;
             overflow-y: auto;
-            padding: 32px;
-        }
-        .page-title {
-            font-size: 24px;
-            font-weight: 700;
-            color: var(--text);
-            margin-bottom: 4px;
-        }
-        .page-meta {
-            font-size: 13px;
-            color: var(--text-light);
-            margin-bottom: 24px;
-        }
-        .page-meta span { margin-right: 16px; }
-        .section-heading {
-            font-size: 16px;
-            font-weight: 600;
-            color: var(--text);
-            margin: 24px 0 12px;
-            padding-bottom: 6px;
-            border-bottom: 2px solid var(--border);
-        }
-
-        /* "Meeting notes" area = the hidden subtitles */
-        #log-container {
-            background: #fafbfc;
-            border: 1px solid var(--border);
-            border-radius: 6px;
             padding: 16px;
-            height: 380px;
-            overflow-y: auto;
-            font-size: 14px;
-            line-height: 1.8;
         }
-        #log-container::-webkit-scrollbar { width: 6px; }
-        #log-container::-webkit-scrollbar-thumb { background: #c1c7d0; border-radius: 3px; }
+        .transcript-content::-webkit-scrollbar { width: 6px; }
+        .transcript-content::-webkit-scrollbar-thumb { background: #ddd; border-radius: 3px; }
 
-        .log-line {
-            padding: 3px 8px;
+        .transcript-entry {
+            margin-bottom: 16px;
+            font-size: 13px;
+        }
+        .speaker-row {
+            display: flex; align-items: center; gap: 8px; margin-bottom: 4px;
+        }
+        .speaker-avatar {
+            width: 24px; height: 24px; border-radius: 50%;
+            background: #ccc; display: flex; align-items: center; justify-content: center;
+            font-size: 10px; color: #fff;
+        }
+        .speaker-name { font-weight: 600; }
+        .speaker-time { font-size: 11px; color: var(--teams-text-secondary); }
+        .cue-text {
+            color: var(--teams-text);
+            line-height: 1.5;
+            padding: 4px 8px;
             border-radius: 4px;
             transition: background 0.2s;
             cursor: pointer;
-            color: #42526e;
         }
-        .log-line:hover { background: #ebecf0; }
-        .log-line.active {
-            background: var(--blue-light);
-            color: var(--blue);
-            font-weight: 500;
+        .cue-text:hover { background: #f0f0f0; }
+        .cue-text.active {
+            background: #ebeeef;
+            border-left: 3px solid var(--teams-active-blue);
         }
 
-        .timestamp {
+        #episode-select {
+            background: transparent;
+            border: 1px solid var(--teams-border);
+            border-radius: 4px;
+            padding: 2px 8px;
             font-size: 12px;
-            color: var(--text-light);
-            margin-right: 8px;
-            font-family: monospace;
-        }
-
-        /* Fake participants & action items */
-        .participants {
-            display: flex;
-            gap: 8px;
-            margin-bottom: 20px;
-            flex-wrap: wrap;
-        }
-        .avatar {
-            width: 28px; height: 28px;
-            border-radius: 50%;
-            display: flex; align-items: center; justify-content: center;
-            font-size: 11px; font-weight: 600; color: #fff;
+            color: var(--teams-text-secondary);
         }
 
         #audio-player { display: none; }
@@ -201,201 +188,210 @@
 </head>
 <body>
 
-<!-- Sidebar -->
-<div class="sidebar">
-    <div class="sidebar-header">
-        <div class="sidebar-logo">C</div>
-        <div class="sidebar-title">Team Space</div>
-    </div>
-    <div class="sidebar-section">
-        <div class="sidebar-section-title">Pages</div>
-        <div class="sidebar-item"><span class="icon">📄</span> Project Overview</div>
-        <div class="sidebar-item"><span class="icon">📋</span> Sprint Planning</div>
-        <div class="sidebar-item active"><span class="icon">📝</span> Meeting Notes</div>
-        <div class="sidebar-item"><span class="icon">📊</span> Q1 Report</div>
-        <div class="sidebar-item"><span class="icon">🔧</span> Tech Specs</div>
-    </div>
-    <div class="sidebar-section">
-        <div class="sidebar-section-title">Recordings</div>
-        <select id="episode-select" onchange="loadEpisode(this.value)"></select>
-    </div>
-    <div class="sidebar-section">
-        <div class="sidebar-section-title">Recent</div>
-        <div class="sidebar-item"><span class="icon">🕐</span> API Design Doc</div>
-        <div class="sidebar-item"><span class="icon">🕐</span> Onboarding Guide</div>
-        <div class="sidebar-item"><span class="icon">🕐</span> Release Notes v2.4</div>
-    </div>
-</div>
-
-<!-- Main Content -->
-<div class="main">
-    <div class="topbar">
-        <div class="breadcrumb">
-            <a href="#">Team Space</a> / <a href="#">Meeting Notes</a> / <span id="current-title">TED Weekly Review</span>
+    <!-- Microsoft Teams App Sidebar -->
+    <div class="app-sidebar">
+        <div class="app-icon active">
+            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M19 12a1 1 0 112 0 1 1 0 01-2 0zM12 11a1 1 0 100 2 1 1 0 000-2zM5 12a1 1 0 112 0 1 1 0 01-2 0z" /></svg>
+            <span>Activity</span>
         </div>
-        <div class="topbar-actions">
-            <button class="btn-small">⭐ Watch</button>
-            <button class="btn-small">✏️ Edit</button>
-            <button class="btn-small">⋯</button>
+        <div class="app-icon">
+            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2a10 10 0 100 20 10 10 0 000-20zM2 12C2 6.48 6.48 2 12 2s10 4.48 10 10-4.48 10-10 10S2 17.52 2 12z" /></svg>
+            <span>Chat</span>
+        </div>
+        <div class="app-icon">
+            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 6c1.1 0 2 .9 2 2s-.9 2-2 2-2-.9-2-2 .9-2 2-2m0 10c2.7 0 5.8 1.29 6 2H6c.23-.72 3.31-2 6-2m0-12C9.79 4 8 5.79 8 8s1.79 4 4 4 4-1.79 4-4-1.79-4-4-4zm0 10c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z" /></svg>
+            <span>Teams</span>
+        </div>
+        <div class="app-icon">
+            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M19 4h-1V2h-2v2H8V2H6v2H5c-1.11 0-1.99.9-1.99 2L3 20c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 16H5V10h14v10zm0-12H5V6h14v2z" /></svg>
+            <span>Calendar</span>
         </div>
     </div>
 
-    <div class="content">
-        <h1 class="page-title" id="page-title">Weekly Team Sync - TED Review</h1>
-        <div class="page-meta">
-            <span>👤 Created by <strong>Team Admin</strong></span>
-            <span>📅 Mar 13, 2026</span>
-            <span>👁 12 views</span>
+    <!-- Main Content Area -->
+    <div class="main-container">
+        <div class="header">
+            <div class="header-left">
+                <span class="back-btn">←</span>
+                <span class="meeting-title">Internal Project Sync - Weekly Recap</span>
+            </div>
+            <div>
+                <select id="episode-select" onchange="loadEpisode(this.value)"></select>
+            </div>
         </div>
 
-        <div class="participants">
-            <div class="avatar" style="background:#0052cc">JW</div>
-            <div class="avatar" style="background:#6554c0">NR</div>
-            <div class="avatar" style="background:#00875a">ML</div>
-            <div class="avatar" style="background:#ff5630">AK</div>
+        <div class="tabs">
+            <div class="tab">Details</div>
+            <div class="tab">Chat</div>
+            <div class="tab active">Transcript</div>
+            <div class="tab">Files</div>
+            <div class="tab">Attendance</div>
         </div>
 
-        <div class="section-heading">📌 Meeting Transcript</div>
-        <div id="log-container">
-            <!-- Subtitles appear here disguised as meeting notes -->
-        </div>
+        <div class="view-content">
+            <div class="video-area">
+                <div class="video-placeholder">NR</div>
+                <div class="meeting-controls">
+                    <div class="control-btn"><span style="font-size:18px">📷</span><span>Camera</span></div>
+                    <div class="control-btn"><span style="font-size:18px">🎤</span><span>Mic</span></div>
+                    <div class="control-btn"><span style="font-size:18px">↗️</span><span>Share</span></div>
+                    <div class="control-btn" style="color:#e23e3e"><span style="font-size:18px">📞</span><span>Leave</span></div>
+                </div>
+            </div>
 
-        <div class="section-heading" style="margin-top:24px">✅ Action Items</div>
-        <div style="font-size:14px; color:#42526e; padding:8px 0;">
-            <div>☐ Review presentation slides — <strong>@JW</strong></div>
-            <div>☐ Schedule follow-up meeting — <strong>@NR</strong></div>
-            <div>☐ Update documentation — <strong>@ML</strong></div>
+            <div class="transcript-area">
+                <div class="transcript-header">
+                    <span>Transcript</span>
+                    <span style="font-size:12px; color:var(--teams-active-blue); cursor:pointer;">Search</span>
+                </div>
+                <div class="transcript-content" id="transcript-content">
+                    <!-- Subtitles will appear here -->
+                </div>
+            </div>
         </div>
     </div>
-</div>
 
-<audio id="audio-player" controls></audio>
+    <audio id="audio-player"></audio>
 
-<script>
-const episodes = [
-    {
-        title: "Weekly Sync - Mar 13",
-        mp3: "ted_curiosity.mp3",
-        vtt: "ted_curiosity.vtt"
-    }
-];
+    <script>
+    const episodes = [
+        {
+            title: "Project Sync - Week 11",
+            mp3: "ted_curiosity.mp3",
+            vtt: "ted_curiosity.vtt"
+        }
+    ];
 
-const select = document.getElementById('episode-select');
-const audio = document.getElementById('audio-player');
-const container = document.getElementById('log-container');
+    const select = document.getElementById('episode-select');
+    const audio = document.getElementById('audio-player');
+    const container = document.getElementById('transcript-content');
 
-episodes.forEach((ep, i) => {
-    let opt = document.createElement('option');
-    opt.value = i;
-    opt.innerText = ep.title;
-    select.appendChild(opt);
-});
-
-let currentCues = [];
-let currentLineIndex = -1;
-
-function parseTime(s) {
-    let p = s.trim().split(':');
-    let secs = 0;
-    if (p.length === 3) { secs += parseInt(p[0])*3600 + parseInt(p[1])*60 + parseFloat(p[2]); }
-    else if (p.length === 2) { secs += parseInt(p[0])*60 + parseFloat(p[1]); }
-    return secs;
-}
-
-function parseVTT(text) {
-    const lines = text.split(/\r?\n/);
-    const cues = [];
-    let i = 0;
-    while (i < lines.length) {
-        if (lines[i].includes('-->')) {
-            let times = lines[i].split('-->');
-            let start = parseTime(times[0]);
-            let end = parseTime(times[1]);
-            i++;
-            let t = "";
-            while (i < lines.length && lines[i].trim() !== "" && !lines[i].includes('-->')) {
-                t += lines[i] + " ";
-                i++;
-            }
-            cues.push({ start, end, text: t.trim() });
-        } else { i++; }
-    }
-    return cues;
-}
-
-function formatTs(secs) {
-    let m = Math.floor(secs / 60);
-    let s = Math.floor(secs % 60);
-    return String(m).padStart(2,'0') + ':' + String(s).padStart(2,'0');
-}
-
-function renderCues() {
-    container.innerHTML = '';
-    currentCues.forEach((cue, i) => {
-        let div = document.createElement('div');
-        div.className = 'log-line';
-        div.id = 'line-' + i;
-        div.innerHTML = `<span class="timestamp">[${formatTs(cue.start)}]</span>${cue.text}`;
-        div.ondblclick = () => {
-            audio.currentTime = cue.start;
-            if (audio.paused) audio.play();
-        };
-        container.appendChild(div);
+    episodes.forEach((ep, i) => {
+        let opt = document.createElement('option');
+        opt.value = i;
+        opt.innerText = ep.title;
+        select.appendChild(opt);
     });
-}
 
-function loadEpisode(index) {
-    const ep = episodes[index];
-    audio.src = ep.mp3;
-    audio.load();
-    currentLineIndex = -1;
-    document.getElementById('current-title').textContent = ep.title;
+    let currentCues = [];
+    let currentLineIndex = -1;
 
-    fetch(ep.vtt)
-        .then(r => r.text())
-        .then(text => {
-            currentCues = parseVTT(text);
-            renderCues();
-        })
-        .catch(err => {
-            container.innerHTML = '<div style="color:#ff5630">Error loading transcript.</div>';
+    function parseTime(s) {
+        let p = s.trim().split(':');
+        let secs = 0;
+        if (p.length === 3) { secs += parseInt(p[0])*3600 + parseInt(p[1])*60 + parseFloat(p[2]); }
+        else if (p.length === 2) { secs += parseInt(p[0])*60 + parseFloat(p[1]); }
+        return secs;
+    }
+
+    function parseVTT(text) {
+        const lines = text.split(/\r?\n/);
+        const cues = [];
+        let i = 0;
+        while (i < lines.length) {
+            if (lines[i].includes('-->')) {
+                let times = lines[i].split('-->');
+                let start = parseTime(times[0]);
+                let end = parseTime(times[1]);
+                i++;
+                let t = "";
+                while (i < lines.length && lines[i].trim() !== "" && !lines[i].includes('-->')) {
+                    t += lines[i] + " ";
+                    i++;
+                }
+                cues.push({ start, end, text: t.trim() });
+            } else { i++; }
+        }
+        return cues;
+    }
+
+    function formatTs(secs) {
+        let m = Math.floor(secs / 60);
+        let s = Math.floor(secs % 60);
+        return String(m).padStart(2,'0') + ':' + String(s).padStart(2,'0');
+    }
+
+    function renderCues() {
+        container.innerHTML = '';
+        currentCues.forEach((cue, i) => {
+            let entry = document.createElement('div');
+            entry.className = 'transcript-entry';
+            entry.id = 'entry-' + i;
+            
+            // Random speaker assignment for visual variety in Teams transcript
+            const speakers = [
+                { name: "Transcript Bot", color: "#464775", initial: "TB" },
+                { name: "Nayeema Raza", color: "#6554c0", initial: "NR" }
+            ];
+            const speaker = i < 20 ? speakers[0] : speakers[1];
+
+            entry.innerHTML = `
+                <div class="speaker-row">
+                    <div class="speaker-avatar" style="background:${speaker.color}">${speaker.initial}</div>
+                    <span class="speaker-name">${speaker.name}</span>
+                    <span class="speaker-time">${formatTs(cue.start)}</span>
+                </div>
+                <div class="cue-text" id="cue-${i}" onclick="jumpTo(${cue.start})">
+                    ${cue.text}
+                </div>
+            `;
+            container.appendChild(entry);
         });
-}
-
-audio.addEventListener('timeupdate', () => {
-    if (!currentCues.length) return;
-    const t = audio.currentTime;
-    let active = -1;
-    for (let i = 0; i < currentCues.length; i++) {
-        if (t >= currentCues[i].start && t <= currentCues[i].end + 0.5) { active = i; break; }
     }
-    if (active !== -1 && active !== currentLineIndex) {
-        highlight(active);
-    }
-});
 
-function highlight(index) {
-    document.querySelectorAll('.log-line.active').forEach(e => e.classList.remove('active'));
-    currentLineIndex = index;
-    let el = document.getElementById('line-' + index);
-    if (el) {
-        el.classList.add('active');
-        let cr = container.getBoundingClientRect();
-        let er = el.getBoundingClientRect();
-        if (er.top < cr.top || er.bottom > cr.bottom) {
-            container.scrollTop = el.offsetTop - container.offsetHeight / 2 + el.offsetHeight / 2;
+    function jumpTo(time) {
+        audio.currentTime = time;
+        if (audio.paused) audio.play();
+    }
+
+    function loadEpisode(index) {
+        const ep = episodes[index];
+        audio.src = ep.mp3;
+        audio.load();
+        currentLineIndex = -1;
+
+        fetch(ep.vtt)
+            .then(r => r.text())
+            .then(text => {
+                currentCues = parseVTT(text);
+                renderCues();
+            });
+    }
+
+    audio.addEventListener('timeupdate', () => {
+        if (!currentCues.length) return;
+        const t = audio.currentTime;
+        let active = -1;
+        for (let i = 0; i < currentCues.length; i++) {
+            if (t >= currentCues[i].start && t <= currentCues[i].end + 0.3) { active = i; break; }
+        }
+        if (active !== -1 && active !== currentLineIndex) {
+            highlight(active);
+        }
+    });
+
+    function highlight(index) {
+        document.querySelectorAll('.cue-text.active').forEach(e => e.classList.remove('active'));
+        currentLineIndex = index;
+        let el = document.getElementById('cue-' + index);
+        if (el) {
+            el.classList.add('active');
+            let cr = container.getBoundingClientRect();
+            let er = el.getBoundingClientRect();
+            if (er.top < cr.top || er.bottom > cr.bottom) {
+                container.scrollTop = document.getElementById('entry-' + index).offsetTop - 40;
+            }
         }
     }
-}
 
-document.addEventListener('keydown', e => {
-    if (e.target.tagName === 'INPUT' || e.target.tagName === 'SELECT' || e.target.tagName === 'TEXTAREA') return;
-    if (e.code === 'Space') { e.preventDefault(); audio.paused ? audio.play() : audio.pause(); }
-    else if (e.code === 'ArrowRight') { audio.currentTime += 5; }
-    else if (e.code === 'ArrowLeft') { audio.currentTime -= 5; }
-});
+    document.addEventListener('keydown', e => {
+        if (e.target.tagName === 'INPUT' || e.target.tagName === 'SELECT' || e.target.tagName === 'TEXTAREA') return;
+        if (e.code === 'Space') { e.preventDefault(); audio.paused ? audio.play() : audio.pause(); }
+        else if (e.code === 'ArrowRight') { audio.currentTime += 5; }
+        else if (e.code === 'ArrowLeft') { audio.currentTime -= 5; }
+    });
 
-loadEpisode(0);
-</script>
+    loadEpisode(0);
+    </script>
 </body>
 </html>
