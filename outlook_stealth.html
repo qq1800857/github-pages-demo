@@ -1,0 +1,425 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mail - 1800857@qq.com - Outlook</title>
+    <link href="https://fonts.googleapis.com/css2?family=Segoe+UI:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        * { margin:0; padding:0; box-sizing:border-box; }
+        :root {
+            --outlook-blue: #0078d4;
+            --outlook-bg: #ffffff;
+            --outlook-sidebar: #f3f2f1;
+            --outlook-border: #edebe9;
+            --outlook-text: #323130;
+            --outlook-text-secondary: #605e5c;
+            --outlook-hover: #f3f2f1;
+            --outlook-selected: #edebe9;
+        }
+        body {
+            font-family: 'Segoe UI', 'wf_segoe-ui_normal', 'Segoe', 'Segoe WP', Tahoma, Arial, sans-serif;
+            background: var(--outlook-bg);
+            color: var(--outlook-text);
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        /* Top Bar */
+        .top-bar {
+            height: 48px;
+            background: var(--outlook-blue);
+            display: flex;
+            align-items: center;
+            padding: 0 16px;
+            color: #fff;
+            flex-shrink: 0;
+        }
+        .top-bar .search-box {
+            flex: 0 1 480px;
+            margin: 0 auto;
+            position: relative;
+        }
+        .top-bar .search-box input {
+            width: 100%;
+            height: 32px;
+            border-radius: 4px;
+            border: none;
+            padding: 0 32px;
+            background: rgba(255, 255, 255, 0.2);
+            color: #fff;
+            font-size: 14px;
+        }
+        .top-bar .search-box input::placeholder { color: #fff; opacity: 0.8; }
+
+        .main-layout {
+            flex: 1;
+            display: flex;
+            overflow: hidden;
+        }
+
+        /* Mini Sidebar */
+        .mini-sidebar {
+            width: 48px;
+            background: var(--outlook-sidebar);
+            border-right: 1px solid var(--outlook-border);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding-top: 12px;
+        }
+        .mini-icon {
+            width: 32px; height: 32px;
+            margin-bottom: 16px;
+            display: flex; align-items: center; justify-content: center;
+            cursor: pointer;
+            color: var(--outlook-text-secondary);
+        }
+        .mini-icon.active { color: var(--outlook-blue); border-left: 2px solid var(--outlook-blue); border-radius: 0; }
+
+        /* Folder Pane */
+        .folder-pane {
+            width: 200px;
+            background: var(--outlook-sidebar);
+            border-right: 1px solid var(--outlook-border);
+            display: flex;
+            flex-direction: column;
+        }
+        .folder-pane .new-mail-btn {
+            background: var(--outlook-blue);
+            color: #fff;
+            border: none;
+            border-radius: 2px;
+            padding: 10px;
+            margin: 12px;
+            font-weight: 600;
+            font-size: 14px;
+            display: flex; align-items: center; justify-content: center;
+            gap: 8px;
+        }
+        .folder-item {
+            padding: 8px 12px;
+            font-size: 14px;
+            display: flex; align-items: center; gap: 10px;
+            cursor: pointer;
+        }
+        .folder-item.active { background: var(--outlook-selected); border-radius: 4px; margin: 0 4px; }
+
+        /* Message List */
+        .message-list {
+            width: 320px;
+            border-right: 1px solid var(--outlook-border);
+            display: flex;
+            flex-direction: column;
+        }
+        .list-header {
+            padding: 12px 16px;
+            border-bottom: 1px solid var(--outlook-border);
+            display: flex; justify-content: space-between; align-items: center;
+            font-size: 15px; font-weight: 600;
+        }
+        .message-items { flex: 1; overflow-y: auto; }
+        .message-item {
+            padding: 12px 16px;
+            border-bottom: 1px solid var(--outlook-border);
+            display: flex; gap: 12px;
+            cursor: pointer;
+        }
+        .message-item:hover { background: var(--outlook-hover); }
+        .message-item.active { background: var(--outlook-selected); border-left: 3px solid var(--outlook-blue); }
+        .avatar {
+            width: 32px; height: 32px;
+            background: #e3008c;
+            border-radius: 50%;
+            color: #fff;
+            display: flex; align-items: center; justify-content: center;
+            font-weight: 600; font-size: 12px;
+            flex-shrink: 0;
+        }
+        .msg-info { flex: 1; overflow: hidden; }
+        .msg-top { display: flex; justify-content: space-between; margin-bottom: 2px; }
+        .sender-name { font-weight: 600; font-size: 14px; color: var(--outlook-text); }
+        .msg-time { font-size: 12px; color: var(--outlook-blue); }
+        .msg-subject { font-size: 13px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .msg-snippet { font-size: 12px; color: var(--outlook-text-secondary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+        /* Reading Pane */
+        .reading-pane {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            background: #fff;
+        }
+        .reading-header {
+            padding: 16px 24px;
+            border-bottom: 1px solid var(--outlook-border);
+        }
+        .subject-line {
+            font-size: 20px; font-weight: 600; margin-bottom: 16px; display: flex; justify-content: space-between; align-items: flex-start;
+        }
+        .sender-details { display: flex; gap: 12px; align-items: center; }
+        .sender-text { font-size: 13px; }
+        .sender-meta { color: var(--outlook-text-secondary); }
+
+        .reading-body {
+            flex: 1;
+            padding: 0 24px 24px;
+            overflow-y: auto;
+        }
+        .external-warning {
+            background: #fff5f5;
+            border: 1px solid #ffccba;
+            padding: 12px;
+            margin: 24px 0;
+            font-size: 13px;
+            color: #323130;
+            display: flex; gap: 10px; align-items: center;
+        }
+
+        /* Transcript lines to look like email body */
+        .transcript-content {
+            font-size: 14px;
+            line-height: 1.6;
+            color: #323130;
+        }
+        .transcript-line {
+            padding: 4px 8px;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background 0.1s;
+        }
+        .transcript-line:hover { background: #f3f3f3; }
+        .transcript-line.active { background: #f3f9ff; color: var(--outlook-blue); font-weight: 500; }
+        .line-ts {
+            font-family: monospace;
+            font-size: 11px;
+            color: #a19f9d;
+            margin-right: 12px;
+            user-select: none;
+        }
+
+        #audio-player { display: none; }
+    </style>
+</head>
+<body>
+
+    <div class="top-bar">
+        <div style="font-weight: 600; font-size: 16px; margin-right: 48px;">Outlook</div>
+        <div class="search-box"><input type="text" placeholder="Search"></div>
+        <div style="margin-left: auto; display: flex; gap: 16px;">
+            <span>🔔</span> <span>⚙️</span> <span>👤</span>
+        </div>
+    </div>
+
+    <div class="main-layout">
+        <!-- Mini Icons -->
+        <div class="mini-sidebar">
+            <div class="mini-icon active">📬<span></span></div>
+            <div class="mini-icon">📅<span></span></div>
+            <div class="mini-icon">👥<span></span></div>
+            <div class="mini-icon">📎<span></span></div>
+        </div>
+
+        <!-- Folders -->
+        <div class="folder-pane">
+            <button class="new-mail-btn">➕ New Mail</button>
+            <div class="folder-item active">📥 Inbox</div>
+            <div class="folder-item">✉️ Sent</div>
+            <div class="folder-item">📝 Drafts</div>
+            <div class="folder-item">🗑️ Deleted</div>
+        </div>
+
+        <!-- Message List (Episode Selector) -->
+        <div class="message-list">
+            <div class="list-header">
+                <span>Focused</span>
+                <span style="font-size: 12px; font-weight: normal; color: var(--outlook-blue);">Filter</span>
+            </div>
+            <div class="message-items" id="message-items">
+                <!-- Episodes go here -->
+            </div>
+        </div>
+
+        <!-- Reading Pane -->
+        <div class="reading-pane">
+            <div class="reading-header">
+                <div class="subject-line">
+                    <span id="display-subject">[External] TED Weekly Update</span>
+                    <div style="font-size: 18px; color: var(--outlook-text-secondary);">↩️ 🔁 → ⋯</div>
+                </div>
+                <div class="sender-details">
+                    <div class="avatar" style="background:#e3008c">NR</div>
+                    <div class="sender-text">
+                        <div><strong id="display-sender">Nayeema Raza</strong> &lt;1800857@qq.com&gt;</div>
+                        <div class="sender-meta">To: wang.congming@outlook.com</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="reading-body">
+                <div class="external-warning">
+                    <span>⚠️</span>
+                    <div><strong>WARNING:</strong> External email. Be vigilant with links, attachments, and requests.</div>
+                </div>
+
+                <div class="transcript-content" id="transcript-content">
+                    <!-- Transcription goes here -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <audio id="audio-player"></audio>
+
+    <script>
+    const episodes = [
+        {
+            title: "[External] TED: How to practice curiosity",
+            sender: "Nayeema Raza",
+            initial: "NR",
+            mp3: "ted_curiosity.mp3",
+            vtt: "ted_curiosity.vtt",
+            snippet: "Screens have reshaped our lives in such profound ways..."
+        }
+    ];
+
+    const audio = document.getElementById('audio-player');
+    const msgList = document.getElementById('message-items');
+    const container = document.getElementById('transcript-content');
+    const subjectEl = document.getElementById('display-subject');
+    const senderEl = document.getElementById('display-sender');
+
+    function renderList() {
+        msgList.innerHTML = '';
+        episodes.forEach((ep, i) => {
+            const item = document.createElement('div');
+            item.className = 'message-item' + (i === 0 ? ' active' : '');
+            item.onclick = () => loadEpisode(i);
+            item.innerHTML = `
+                <div class="avatar" style="background: #e3008c">${ep.initial}</div>
+                <div class="msg-info">
+                    <div class="msg-top">
+                        <span class="sender-name">${ep.sender}</span>
+                        <span class="msg-time">2:45 PM</span>
+                    </div>
+                    <div class="msg-subject">${ep.title}</div>
+                    <div class="msg-snippet">${ep.snippet}</div>
+                </div>
+            `;
+            msgList.appendChild(item);
+        });
+    }
+
+    let currentCues = [];
+    let currentLineIndex = -1;
+
+    function parseTime(s) {
+        let p = s.trim().split(':');
+        let secs = 0;
+        if (p.length === 3) { secs += parseInt(p[0])*3600 + parseInt(p[1])*60 + parseFloat(p[2]); }
+        else if (p.length === 2) { secs += parseInt(p[0])*60 + parseFloat(p[1]); }
+        return secs;
+    }
+
+    function parseVTT(text) {
+        const lines = text.split(/\r?\n/);
+        const cues = [];
+        let i = 0;
+        while (i < lines.length) {
+            if (lines[i].includes('-->')) {
+                let times = lines[i].split('-->');
+                let start = parseTime(times[0]);
+                let end = parseTime(times[1]);
+                i++;
+                let t = "";
+                while (i < lines.length && lines[i].trim() !== "" && !lines[i].includes('-->')) {
+                    t += lines[i] + " ";
+                    i++;
+                }
+                cues.push({ start, end, text: t.trim() });
+            } else { i++; }
+        }
+        return cues;
+    }
+
+    function formatTs(secs) {
+        let m = Math.floor(secs / 60);
+        let s = Math.floor(secs % 60);
+        return String(m).padStart(2,'0') + ':' + String(s).padStart(2,'0');
+    }
+
+    function renderCues() {
+        container.innerHTML = '';
+        currentCues.forEach((cue, i) => {
+            let div = document.createElement('div');
+            div.className = 'transcript-line';
+            div.id = 'cue-' + i;
+            div.innerHTML = `<span class="line-ts">[${formatTs(cue.start)}]</span>${cue.text}`;
+            div.onclick = () => {
+                audio.currentTime = cue.start;
+                if (audio.paused) audio.play();
+            };
+            container.appendChild(div);
+        });
+    }
+
+    function loadEpisode(index) {
+        const ep = episodes[index];
+        audio.src = ep.mp3;
+        audio.load();
+        currentLineIndex = -1;
+        subjectEl.textContent = ep.title;
+        senderEl.textContent = ep.sender;
+
+        document.querySelectorAll('.message-item').forEach((el, idx) => {
+            el.classList.toggle('active', idx === index);
+        });
+
+        fetch(ep.vtt)
+            .then(r => r.text())
+            .then(text => {
+                currentCues = parseVTT(text);
+                renderCues();
+            });
+    }
+
+    audio.addEventListener('timeupdate', () => {
+        if (!currentCues.length) return;
+        const t = audio.currentTime;
+        let active = -1;
+        for (let i = 0; i < currentCues.length; i++) {
+            if (t >= currentCues[i].start && t <= currentCues[i].end + 0.3) { active = i; break; }
+        }
+        if (active !== -1 && active !== currentLineIndex) {
+            highlight(active);
+        }
+    });
+
+    function highlight(index) {
+        document.querySelectorAll('.transcript-line.active').forEach(e => e.classList.remove('active'));
+        currentLineIndex = index;
+        let el = document.getElementById('cue-' + index);
+        if (el) {
+            el.classList.add('active');
+            // Smoothly scroll the reading body
+            const wrapper = document.querySelector('.reading-body');
+            const targetPos = el.offsetTop - 150;
+            wrapper.scrollTo({ top: targetPos, behavior: 'smooth' });
+        }
+    }
+
+    document.addEventListener('keydown', e => {
+        if (e.target.tagName === 'INPUT' || e.target.tagName === 'SELECT' || e.target.tagName === 'TEXTAREA') return;
+        if (e.code === 'Space') { e.preventDefault(); audio.paused ? audio.play() : audio.pause(); }
+        else if (e.code === 'ArrowRight') { audio.currentTime += 5; }
+        else if (e.code === 'ArrowLeft') { audio.currentTime -= 5; }
+    });
+
+    renderList();
+    loadEpisode(0);
+    </script>
+</body>
+</html>
