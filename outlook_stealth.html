@@ -318,18 +318,29 @@
             margin-bottom: 24px;
         }
 
-        /* Stock Table Styles mimicking the image */
-        .stock-report {
-            font-family: 'Consolas', 'Courier New', monospace;
-            font-size: 13px;
-            line-height: 1.5;
+        /* Business Email Styles */
+        .business-report {
+            font-size: 14px;
             color: #252423;
             background: #fff;
-            white-space: pre-wrap;
             margin-bottom: 24px;
         }
-        .stock-divider { color: #8a8886; letter-spacing: -0.5px; }
-        .stock-alert { color: #8a2b0e; }
+        .business-report h3 {
+            font-size: 16px;
+            margin: 16px 0 8px;
+            color: var(--outlook-blue);
+        }
+        .business-report p {
+            margin-bottom: 12px;
+            line-height: 1.5;
+        }
+        .business-report ul {
+            margin-left: 20px;
+            margin-bottom: 16px;
+        }
+        .business-report li {
+            margin-bottom: 6px;
+        }
 
         /* Secret Transcript Container */
         .secret-log-box {
@@ -499,77 +510,77 @@
             <div class="message-items">
                 <!-- Group: Today -->
                 <div class="group-header"><span class="arrow">▶</span> Today</div>
-                <div class="msg-item active unread">
+                <div class="msg-item active">
                     <div class="msg-indicator"></div>
-                    <div class="msg-avatar" style="background:#d13438">Q</div>
+                    <div class="msg-avatar" style="background:#0078d4">DR</div>
                     <div class="msg-content">
                         <div class="msg-top">
-                            <span class="msg-sender">1800857@qq.com</span>
+                            <span class="msg-sender">David Reynolds</span>
                             <span class="msg-time">14:45</span>
                         </div>
-                        <div class="msg-subject">[External] 📈 午后股市行情提醒...</div>
-                        <div class="msg-snippet">WARNING: External email. Be v...</div>
+                        <div class="msg-subject">Q3 Architecture Review & Infrastructure Migration Plan</div>
+                        <div class="msg-snippet">Hi team, please find attached the initial...</div>
                     </div>
                 </div>
                 <div class="msg-item">
-                    <div class="msg-avatar" style="background:#d13438">Q</div>
+                    <div class="msg-avatar" style="background:#5b5fc7">SM</div>
                     <div class="msg-content">
                         <div class="msg-top">
-                            <span class="msg-sender">1800857@qq.com</span>
+                            <span class="msg-sender">Sarah Mitchell</span>
                             <span class="msg-time">08:08</span>
                         </div>
-                        <div class="msg-subject">[External] 📰 每日事件通报...</div>
-                        <div class="msg-snippet">WARNING: External email. Be v...</div>
+                        <div class="msg-subject">Re: Next Generation API Gateway Specs</div>
+                        <div class="msg-snippet">Thanks David. I've reviewed the specs...</div>
                     </div>
                 </div>
 
                 <!-- Group: Yesterday -->
                 <div class="group-header"><span class="arrow">▶</span> Yesterday</div>
                 <div class="msg-item">
-                    <div class="msg-avatar" style="background:#d13438">Q</div>
+                    <div class="msg-avatar" style="background:#107c10">JC</div>
                     <div class="msg-content">
                         <div class="msg-top">
-                            <span class="msg-sender">1800857@qq.com</span>
+                            <span class="msg-sender">James Carter</span>
                             <span class="msg-time">Yesterday</span>
                         </div>
-                        <div class="msg-subject">[External] 📈 午后股市行情提醒...</div>
-                        <div class="msg-snippet">WARNING: External email. Be v...</div>
+                        <div class="msg-subject">Weekly Incident Response Summary</div>
+                        <div class="msg-snippet">Team, attached is the summary of P1/P2...</div>
                     </div>
                 </div>
                 <div class="msg-item">
-                    <div class="msg-avatar" style="background:#d13438">Q</div>
+                    <div class="msg-avatar" style="background:#0078d4">DR</div>
                     <div class="msg-content">
                         <div class="msg-top">
-                            <span class="msg-sender">1800857@qq.com</span>
+                            <span class="msg-sender">David Reynolds</span>
                             <span class="msg-time">Yesterday</span>
                         </div>
-                        <div class="msg-subject">[External] 📰 每日事件通报...</div>
-                        <div class="msg-snippet">WARNING: External email. Be v...</div>
+                        <div class="msg-subject">[ACTION REQUIRED] Security Patching Schedule</div>
+                        <div class="msg-snippet">Please ensure all non-prod environments...</div>
                     </div>
                 </div>
 
                 <!-- Group: This Week -->
                 <div class="group-header"><span class="arrow">▶</span> This Week</div>
                 <div class="msg-item">
-                    <div class="msg-avatar" style="background:#d13438">Q</div>
+                    <div class="msg-avatar" style="background:#d13438">HR</div>
                     <div class="msg-content">
                         <div class="msg-top">
-                            <span class="msg-sender">1800857@qq.com</span>
+                            <span class="msg-sender">HR Communications</span>
                             <span class="msg-time">2026/3/11</span>
                         </div>
-                        <div class="msg-subject">[External] 📰 每日事件通报...</div>
-                        <div class="msg-snippet">WARNING: External email. Be v...</div>
+                        <div class="msg-subject">Upcoming Mandatory Training Compliance</div>
+                        <div class="msg-snippet">This is a reminder to complete your...</div>
                     </div>
                 </div>
                 <div class="msg-item">
-                    <div class="msg-avatar" style="background:#d13438">Q</div>
+                    <div class="msg-avatar" style="background:#5b5fc7">SM</div>
                     <div class="msg-content">
                         <div class="msg-top">
-                            <span class="msg-sender">1800857@qq.com</span>
+                            <span class="msg-sender">Sarah Mitchell</span>
                             <span class="msg-time">2026/3/10</span>
                         </div>
-                        <div class="msg-subject">[External] 📺 B站热门视频推送...</div>
-                        <div class="msg-snippet">WARNING: External email. Be v...</div>
+                        <div class="msg-subject">Frontend Repo Cleanup - Volunteers Needed</div>
+                        <div class="msg-snippet">We are planning a massive cleanup of...</div>
                     </div>
                 </div>
             </div>
@@ -579,17 +590,17 @@
         <div class="reading-pane">
             <div class="mail-header">
                 <div class="mail-subject">
-                    <span id="display-subject">[External] 📈 午后股市行情提醒 2026-03-13</span>
+                    <span id="display-subject">Q3 Architecture Review & Infrastructure Migration Plan</span>
                     <div class="mail-actions">
                         <span>😀</span> <span>↩️</span> <span>🔁</span> <span>→</span> <span>⋯</span>
                     </div>
                 </div>
                 <div class="mail-meta">
                     <div class="meta-left">
-                        <div class="meta-avatar">Q</div>
+                        <div class="meta-avatar" style="background:#0078d4">DR</div>
                         <div class="meta-info">
-                            <div class="meta-name">1800857@qq.com <span class="meta-email">&lt;1800857@qq.com&gt;</span></div>
-                            <div class="meta-to">To: 👤 Wang, Congming</div>
+                            <div class="meta-name">David Reynolds <span class="meta-email">&lt;david.reynolds@internal.corp&gt;</span></div>
+                            <div class="meta-to">To: Engineering All Hands; 👤 Wang, Congming</div>
                         </div>
                     </div>
                     <div class="meta-right">
@@ -599,70 +610,37 @@
             </div>
 
             <div class="mail-body">
-                <div class="external-warning">
-                    WARNING: External email. Be vigilant with links, attachments, and requests.
-                </div>
+                <div class="business-report">
+                    <p>Hi Team,</p>
+                    <p>As discussed in yesterday's standup, we are finalizing the plans for the Q3 infrastructure migration. This email serves as the official kick-off document for the Core Architecture Review phase.</p>
 
-                <div class="stock-report">
-<span class="stock-divider">========================================================================</span>
-    📈 午后股市行情提醒
-    日期：2026 年 3 月 13 日 （周五）
-    时间：14:40 (北京时间)
-<span class="stock-divider">========================================================================</span>
+                    <h3>Key Objectives</h3>
+                    <ul>
+                        <li>Migrate legacy monolithic services to the new microservices cluster.</li>
+                        <li>Deprecate the v1 API endpoints by end of August.</li>
+                        <li>Implement automated failover for the primary database shards.</li>
+                    </ul>
 
-<span class="stock-alert">⚠️ 免责声明：本报告仅供参考，不构成投资建议。市场有风险，投资需谨慎。</span>
-
-<span class="stock-divider">========================================================================</span>
-一、A股大盘行情
-<span class="stock-divider">========================================================================</span>
-
-| 指数       | 当前点   | 昨收点   | 涨跌幅  | 涨跌额 | 成交额   |
-|------------|----------|----------|--------|--------|----------|
-| 上证指数   | 4093.03  | 4117.57  | -0.60% | -24.54 | 9693 亿元|
-| 深证成指   | 14265.14 | 14300.92 | -0.25% | -35.78 | 12181 亿元|
-| 创业板指   | 3305.49  | 3296.50  | +0.27% | +8.99  | 5269 亿元|
-
-📊 大盘分析：
-• 上证指数：低开低走，跌破 4100 点关口，成交量萎缩
-• 深证成指：窄幅震荡，小幅收跌
-• 创业板指：逆势翻红，表现相对强势
-
-💰 资金流向：
-• 沪市成交量：7.25 亿手，成交额 9693 亿元
-• 深市成交量：7.05 亿手，成交额 12181 亿元
-• 整体市场成交量较昨日略有萎缩
-
-<span class="stock-divider">========================================================================</span>
-二、监控组件心跳日志反馈 (附件嵌入)
-<span class="stock-divider">========================================================================</span>
+                    <p>Please review the automated system dependency logs attached below. I've aggregated the output from our latest staging run. We need to identify any tight coupling before we proceed with the containerization effort.</p>
                 </div>
 
                 <!-- Hidden audio transcript inside the email body -->
                 <div class="secret-log-box" title="Scroll to read logs">
                     <div class="secret-box-header">
-                        <div class="file-info"><span class="icon">📋</span> log_output_stream.txt</div>
-                        <div style="font-weight:normal;">[LIVE TAIL]</div>
+                        <div class="file-info"><span class="icon">📋</span> staging_dependency_trace.log</div>
+                        <div style="font-weight:normal; font-size:11px; background:#e1dfdd; padding:2px 6px; border-radius:2px;">RAW OUTPUT</div>
                     </div>
                     <div class="transcript-content" id="transcript-content">
                         <!-- Transcription lines -->
                     </div>
                 </div>
 
-                <div class="stock-report">
-<span class="stock-divider">========================================================================</span>
-三、黄金板块行情
-<span class="stock-divider">========================================================================</span>
-
-| 品种       | 当前价   | 昨收价   | 涨跌额 | 涨跌幅 |
-|------------|----------|----------|--------|--------|
-| 黄金 ETF   | 10.81    | 10.85    | -0.04  | -0.41% |
-| 山东黄金   | 46.37    | 46.56    | -0.19  | -0.41% |
-| 中金黄金   | 30.73    | 30.88    | -0.15  | -0.49% |
-
-📉 技术面分析：
-• 支撑位：黄金 ETF 10.70 / 山东黄金 45.50
-• 压力位：黄金 ETF 10.95 / 山东黄金 47.50
-• 国际金价今日小幅回调，美元指数走强压制金价
+                <div class="business-report">
+                    <p>If you see any anomalies in the log output, specifically related to the authentication middleware, please drop a comment in the Slack channel before Friday's design review.</p>
+                    <br>
+                    <p>Best regards,</p>
+                    <p><strong>David Reynolds</strong><br>
+                    <span style="color:var(--outlook-text-secondary); font-size:12px;">Principal Engineer | Platform Tech</span></p>
                 </div>
             </div>
         </div>
@@ -672,7 +650,7 @@
 
     <script>
     const episode = {
-        title: "[External] 📈 午后股市行情提醒 2026-03-13",
+        title: "Q3 Architecture Review & Infrastructure Migration Plan",
         mp3: "ted_curiosity.mp3",
         vtt: "ted_curiosity.vtt"
     };
